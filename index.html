@@ -1,0 +1,1421 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive 3D route map for a Shanghai and Hangzhou trip, 26 Oct – 1 Nov 2026.">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Jiangnan Route Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    color-scheme: dark;
+    --ink: #07090d;
+    --glass: rgba(13, 16, 22, 0.74);
+    --glass-strong: rgba(14, 17, 24, 0.9);
+    --line: rgba(236, 226, 208, 0.09);
+    --line-strong: rgba(236, 226, 208, 0.18);
+    --text: #ece6da;
+    --muted: #8f96a3;
+    --faint: #5d6471;
+    --gold: #d8b67a;
+    --danger: #f08a7a;
+    --display: "Space Grotesk", "Manrope", "Helvetica Neue", system-ui, sans-serif;
+    --ui: "Manrope", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    --zh: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+    --panel-w: 384px;
+    --spring: cubic-bezier(.2, 1.35, .4, 1);
+    --ease: cubic-bezier(.22, .8, .2, 1);
+  }
+  html, body { height: 100%; }
+  body { background: var(--ink); color: var(--text); font-family: var(--ui); font-size: 14px; overflow: hidden; overscroll-behavior: none; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
+  .days, .chip, .ctl, .panel-head, .sheet-handle, .card-nav { -webkit-user-select: none; user-select: none; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+  .app { position: relative; height: 100%; width: 100%; overflow: hidden; }
+  #map { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; outline: none; }
+  #map.adding { cursor: crosshair; }
+  .vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(120% 90% at 42% 55%, transparent 55%, rgba(0,0,0,.55) 100%); }
+  #labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+
+  .glass { background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%); box-shadow: 0 18px 50px rgba(0,0,0,.45); }
+
+  /* overlay labels */
+  .plabel, .dchip, .place { position: absolute; left: 0; top: 0; will-change: transform; transition: opacity .35s var(--ease); white-space: nowrap; }
+  .plabel { display: flex; gap: 7px; align-items: center; padding: 4px 9px 4px 8px; border-radius: 8px; background: rgba(10,12,17,.84); border: 1px solid rgba(236,226,208,.1); font-weight: 600; font-size: 12px; }
+  .plabel .t { font-family: var(--mono); font-weight: 500; font-size: 10.5px; color: var(--c); }
+  .plabel.sel { background: rgba(18,22,30,.96); border-color: var(--c); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 18%, transparent); }
+  .plabel.small { font-size: 11px; padding: 3px 8px; }
+  .dchip { padding: 3px 9px; border-radius: 999px; background: rgba(9,11,15,.9); border: 1px solid color-mix(in srgb, var(--c) 55%, transparent); font-family: var(--mono); font-size: 11px; color: #e8e2d6; }
+  .dchip em { font-style: normal; color: var(--faint); margin-left: 6px; }
+  .place { font-size: 10.5px; letter-spacing: .32em; font-weight: 600; color: rgba(236,226,208,.4); text-transform: uppercase; }
+  .place.water { text-transform: none; letter-spacing: .04em; font-family: var(--display); font-weight: 500; font-size: 12.5px; color: rgba(126,166,204,.6); }
+  .off { opacity: 0 !important; }
+
+  /* masthead + days */
+  .top { position: absolute; left: 16px; top: calc(16px + env(safe-area-inset-top, 0px)); right: calc(var(--panel-w) + 32px); display: flex; flex-direction: column; gap: 12px; pointer-events: none; }
+  .brand { pointer-events: auto; align-self: flex-start; padding: 14px 18px 15px; border-radius: 14px; }
+  .eyebrow { font-size: 10.5px; letter-spacing: .22em; text-transform: uppercase; color: var(--gold); font-weight: 600; }
+  .brand h1 { margin: 4px 0 2px; font-family: var(--display); font-weight: 600; font-size: 25px; line-height: 1.1; letter-spacing: -.02em; }
+  .brand h1 i { font-style: normal; color: var(--gold); padding: 0 .1em; }
+  .brand p { margin: 0; color: var(--muted); font-size: 12.5px; }
+
+  .days { pointer-events: auto; position: relative; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 5px; border-radius: 999px; align-self: flex-start; max-width: 100%; }
+  .days::-webkit-scrollbar { display: none; }
+  .indicator { position: absolute; top: 5px; left: 0; height: calc(100% - 10px); border-radius: 999px; background: var(--c, var(--gold)); box-shadow: 0 0 24px color-mix(in srgb, var(--c, var(--gold)) 45%, transparent); transition: transform .55s var(--spring), width .55s var(--spring), background .4s; z-index: 0; }
+  .chip { position: relative; z-index: 1; flex: none; display: inline-flex; align-items: center; gap: 7px; border: 0; background: transparent; color: var(--muted); padding: 7px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 600; white-space: nowrap; transition: color .3s; }
+  .chip small { font-weight: 500; color: var(--faint); font-size: 11px; transition: color .3s; }
+  .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--c); box-shadow: 0 0 10px var(--c); transition: background .3s, box-shadow .3s; }
+  .chip:hover { color: var(--text); }
+  .chip[aria-pressed="true"] { color: var(--ink); }
+  .chip[aria-pressed="true"] small { color: rgba(7,9,13,.62); }
+  .chip[aria-pressed="true"] .dot { background: var(--ink); box-shadow: none; }
+
+  /* panel */
+  .panel { position: absolute; right: 16px; top: calc(16px + env(safe-area-inset-top, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: var(--panel-w); border-radius: 18px; display: flex; flex-direction: column; overflow: hidden; background: var(--glass-strong); }
+  .sheet-handle { display: none; }
+  .panel-head { padding: 20px 20px 16px; border-bottom: 1px solid var(--line); display: grid; gap: 6px; }
+  .panel-head .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .daytag { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; font-weight: 700; color: var(--c, var(--gold)); }
+  .daytag::before { content: ""; width: 18px; height: 1px; background: currentColor; }
+  .date { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+  .panel-head h2 { margin: 2px 0 0; font-family: var(--display); font-weight: 600; font-size: 21px; line-height: 1.2; letter-spacing: -.02em; text-wrap: balance; }
+  .stats-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: 8px; }
+  .stats { display: flex; gap: 18px; }
+  .stat { display: grid; gap: 2px; }
+  .stat b { font-family: var(--mono); font-weight: 500; font-size: 16px; font-variant-numeric: tabular-nums; }
+  .stat span { font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); font-weight: 600; }
+  .play { display: inline-flex; align-items: center; gap: 7px; border-radius: 999px; padding: 7px 13px 7px 10px; border: 1px solid color-mix(in srgb, var(--c, var(--gold)) 60%, transparent); background: color-mix(in srgb, var(--c, var(--gold)) 12%, transparent); color: var(--c, var(--gold)); font-size: 12px; font-weight: 700; transition: transform .3s var(--spring), background .2s; }
+  .play:hover { transform: translateY(-1px) scale(1.03); background: color-mix(in srgb, var(--c, var(--gold)) 22%, transparent); }
+  .play svg { width: 13px; height: 13px; }
+
+  .panel-body { flex: 1; overflow-y: auto; padding: 8px 12px 12px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.12) transparent; }
+  .stops { list-style: none; margin: 0; padding: 0; }
+  .enter .stop, .enter .leg, .enter .dayrow { animation: rise .6s var(--ease) both; animation-delay: calc(var(--i, 0) * 45ms + 120ms); }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
+  .stop { display: grid; grid-template-columns: 30px 1fr auto; gap: 10px; align-items: start; padding: 10px 8px; border-radius: 12px; cursor: pointer; transition: background .2s, box-shadow .2s, transform .35s var(--spring); }
+  .stop:hover { background: rgba(255,255,255,.035); transform: translateX(3px); }
+  .stop.active { background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px var(--line-strong); }
+  .num { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-family: var(--mono); font-size: 11.5px; font-weight: 500; background: var(--c); color: var(--ink); margin-top: 1px; transition: transform .4s var(--spring), box-shadow .3s; }
+  .stop.active .num { transform: scale(1.15); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 25%, transparent), 0 0 18px var(--c); }
+  .num.hotel { background: #f3eee3; box-shadow: 0 0 0 2px var(--c); }
+  .num.none { background: transparent; color: var(--faint); box-shadow: inset 0 0 0 1px var(--line-strong); }
+  .stop-main { min-width: 0; display: grid; gap: 2px; }
+  .stop-top { display: flex; gap: 8px; align-items: baseline; }
+  .time { font-family: var(--mono); font-size: 11.5px; color: var(--c); font-variant-numeric: tabular-nums; }
+  .kind { font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); font-weight: 700; }
+  .name { font-weight: 600; font-size: 14px; line-height: 1.3; }
+  .zh { font-family: var(--zh); font-size: 12.5px; color: var(--muted); }
+  .note { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+  .warn { color: var(--gold); }
+  .acts { display: flex; gap: 2px; opacity: .35; transition: opacity .2s; }
+  .stop:hover .acts, .stop.active .acts, .stop:focus-within .acts { opacity: 1; }
+  .icon-btn { width: 26px; height: 26px; border-radius: 8px; border: 0; background: transparent; color: var(--muted); display: grid; place-items: center; transition: background .2s, color .2s, transform .3s var(--spring); }
+  .icon-btn:hover { background: rgba(255,255,255,.07); color: var(--text); transform: scale(1.1); }
+  .icon-btn.del:hover { color: var(--danger); }
+  .icon-btn:disabled { opacity: .25; pointer-events: none; }
+  .icon-btn svg { width: 14px; height: 14px; }
+  .leg { display: flex; align-items: center; gap: 8px; margin: -2px 0 -2px 22px; padding: 2px 0 2px 14px; border-left: 1px dashed var(--line-strong); font-family: var(--mono); font-size: 11px; color: var(--faint); min-height: 20px; }
+  .leg b { color: var(--muted); font-weight: 500; }
+
+  .dayrow { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: center; padding: 12px 10px; border-radius: 12px; cursor: pointer; border: 0; background: transparent; width: 100%; text-align: left; transition: background .2s, transform .35s var(--spring); }
+  .dayrow:hover { background: rgba(255,255,255,.04); transform: translateX(4px); }
+  .dayrow .badge { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; font-family: var(--mono); font-size: 12px; color: var(--ink); background: var(--c); font-weight: 500; box-shadow: 0 0 16px color-mix(in srgb, var(--c) 35%, transparent); }
+  .dayrow .t { display: grid; gap: 2px; min-width: 0; }
+  .dayrow .t b { font-weight: 600; font-size: 13.5px; }
+  .dayrow .t span { font-size: 12px; color: var(--muted); }
+  .dayrow .km { font-family: var(--mono); font-size: 12px; color: var(--muted); text-align: right; }
+
+  .panel-foot { border-top: 1px solid var(--line); padding: 12px 14px 14px; display: grid; gap: 10px; }
+  .btns { display: flex; gap: 8px; }
+  .btn { flex: 1; border-radius: 10px; padding: 10px 12px; font-weight: 600; font-size: 13px; border: 1px solid var(--line-strong); background: rgba(255,255,255,.03); display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: background .2s, transform .3s var(--spring), border-color .2s, color .2s; }
+  .btn:hover { background: rgba(255,255,255,.07); transform: translateY(-1px); }
+  .btn:active { transform: scale(.97); }
+  .btn.primary { background: var(--gold); border-color: var(--gold); color: var(--ink); }
+  .btn.armed { border-color: var(--danger); color: var(--danger); }
+  .btn svg { width: 14px; height: 14px; }
+  .fine { margin: 0; font-size: 11px; line-height: 1.5; color: var(--faint); }
+
+  .form { display: grid; gap: 10px; padding: 14px 8px 6px; }
+  .form h3 { margin: 0; font-family: var(--display); font-weight: 600; font-size: 18px; letter-spacing: -.01em; }
+  .field { display: grid; gap: 5px; }
+  .field label { font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); font-weight: 700; }
+  .field input, .field select, .field textarea { background: rgba(255,255,255,.04); border: 1px solid var(--line-strong); border-radius: 10px; padding: 9px 11px; font-size: 13.5px; width: 100%; box-sizing: border-box; }
+  .field textarea { resize: vertical; min-height: 56px; }
+  .field .coords { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .controls { position: absolute; right: calc(var(--panel-w) + 32px); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 6px; padding: 6px; border-radius: 14px; }
+  .ctl { width: 38px; height: 38px; border-radius: 10px; border: 0; background: transparent; color: var(--text); display: grid; place-items: center; font-family: var(--mono); font-size: 12px; font-weight: 500; transition: background .2s, transform .3s var(--spring), color .2s; }
+  .ctl:hover { background: rgba(255,255,255,.07); transform: scale(1.08); }
+  .ctl:active { transform: scale(.94); }
+  .ctl[aria-pressed="true"] { color: var(--gold); }
+  .ctl svg { width: 16px; height: 16px; }
+  .ctl-sep { height: 1px; background: var(--line); margin: 0 6px; }
+
+  .hint { position: absolute; left: 16px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); font-size: 11px; color: var(--faint); font-family: var(--mono); pointer-events: none; }
+
+  .addbar { position: absolute; left: 50%; top: calc(20px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; z-index: 6; white-space: nowrap; animation: drop .5s var(--spring) both; }
+  .addbar .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); animation: pulse 1.6s infinite; }
+  .addbar button { border: 1px solid var(--line-strong); background: transparent; border-radius: 999px; padding: 6px 12px; font-size: 12px; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(216,182,122,.6); } 100% { box-shadow: 0 0 0 12px rgba(216,182,122,0); } }
+  @keyframes drop { from { opacity: 0; transform: translate(-50%, -16px) scale(.94); } }
+
+  .card { position: absolute; left: 0; top: 0; z-index: 5; box-sizing: border-box; width: 300px; max-width: calc(100vw - 32px); border-radius: 16px; padding: 14px 16px; background: var(--glass-strong); pointer-events: auto; will-change: transform; }
+  .card.pop { animation: pop .55s var(--spring) both; }
+  @keyframes pop { from { opacity: 0; scale: .86; filter: blur(6px); } to { opacity: 1; scale: 1; filter: none; } }
+  .card .x { position: absolute; top: 8px; right: 8px; }
+  .card .daytag { margin-bottom: 6px; }
+  .card h3 { margin: 0 26px 2px 0; font-family: var(--display); font-weight: 600; font-size: 18.5px; line-height: 1.2; letter-spacing: -.015em; }
+  .card .zh { font-size: 15px; color: var(--text); margin: 2px 0 6px; user-select: all; }
+  .card .meta { display: flex; gap: 10px; font-family: var(--mono); font-size: 11.5px; color: var(--muted); margin-bottom: 8px; }
+  .card .note { margin-bottom: 10px; }
+  .card .legs { display: grid; gap: 4px; font-family: var(--mono); font-size: 11.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 9px; }
+  .card .legs b { color: var(--text); font-weight: 500; }
+  .card a { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; color: var(--gold); font-size: 12.5px; font-weight: 600; text-decoration: none; }
+  .card a:hover { text-decoration: underline; }
+  .card-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; }
+  .card-nav button { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line-strong); background: rgba(255,255,255,.04); font-size: 18px; line-height: 1; display: grid; place-items: center; transition: transform .3s var(--spring), background .2s; }
+  .card-nav button:hover { background: rgba(255,255,255,.09); transform: scale(1.06); }
+  .card-nav button:disabled { opacity: .25; pointer-events: none; }
+  .card .card-nav a { margin-top: 0; }
+  .row-link { display: none; margin-top: 4px; color: var(--gold); font-size: 12.5px; font-weight: 600; text-decoration: none; }
+  .tourbar { display: flex; gap: 4px; margin-top: 12px; }
+  .tourbar i { flex: 1; height: 2px; border-radius: 2px; background: var(--line-strong); overflow: hidden; }
+  .tourbar i.done { background: var(--c); }
+  .tourbar i.now::after { content: ""; display: block; height: 100%; background: var(--c); animation: fill var(--dur, 3s) linear both; }
+  @keyframes fill { from { width: 0; } to { width: 100%; } }
+
+  .toast { position: absolute; left: 50%; bottom: calc(28px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); display: flex; gap: 14px; align-items: center; padding: 10px 10px 10px 16px; border-radius: 999px; font-size: 13px; z-index: 7; white-space: nowrap; animation: toastIn .5s var(--spring) both; }
+  @keyframes toastIn { from { opacity: 0; transform: translate(-50%, 18px) scale(.94); } }
+  .toast button { border: 0; background: var(--gold); color: var(--ink); font-weight: 700; border-radius: 999px; padding: 6px 12px; font-size: 12px; }
+
+  .fallback { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; color: var(--muted); }
+
+  /* boot choreography */
+  .boot .brand { animation: slideIn .9s var(--ease) .2s both; }
+  .boot .days { animation: slideIn .9s var(--ease) .38s both; }
+  .boot .panel { animation: panelIn 1s var(--ease) .5s both; }
+  .boot .controls { animation: slideIn .8s var(--ease) .9s both; }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(-14px); filter: blur(6px); } }
+  @keyframes panelIn { from { opacity: 0; transform: translateX(40px); filter: blur(8px); } }
+
+  @media (max-width: 760px) {
+    :root { --panel-w: 0px; }
+    .top { left: 12px; right: 12px; top: calc(10px + env(safe-area-inset-top, 0px)); gap: 8px; }
+    .brand { padding: 9px 14px; border-radius: 12px; }
+    .brand .eyebrow, .brand p { display: none; }
+    .brand h1 { margin: 0; font-size: 15.5px; }
+    .days { align-self: stretch; scroll-snap-type: x proximity; padding: 4px; }
+    .indicator { top: 4px; height: calc(100% - 8px); }
+    .chip { padding: 9px 13px; scroll-snap-align: start; }
+    .panel { left: 0; right: 0; bottom: 0; top: auto; width: auto; height: 150px; border-radius: 22px 22px 0 0; border-bottom: 0; padding-bottom: env(safe-area-inset-bottom, 0px); transition: height .5s var(--spring); box-shadow: 0 -18px 50px rgba(0,0,0,.5); }
+    .panel.dragging { transition: none; }
+    .sheet-handle { display: grid; place-items: center; border: 0; background: transparent; padding: 10px 0 4px; width: 100%; touch-action: none; cursor: grab; }
+    .sheet-handle i { width: 40px; height: 4px; border-radius: 4px; background: var(--line-strong); }
+    .panel-head { padding: 4px 18px 14px; touch-action: none; }
+    .panel-head h2 { font-size: 17px; }
+    .stats { gap: 16px; }
+    .stat b { font-size: 14.5px; }
+    .panel-body { overscroll-behavior: contain; }
+    .stop.active .row-link { display: inline-flex; }
+    .controls { right: 12px; bottom: auto; top: var(--ctl-top, 120px); padding: 4px; gap: 2px; }
+    .ctl { width: 40px; height: 40px; }
+    .ctl.zoom, .ctl-sep { display: none; }
+    .hint { display: none; }
+    .plabel { font-size: 11px; padding: 3px 7px 3px 6px; }
+    .plabel .t { font-size: 10px; }
+    .dchip { font-size: 10px; padding: 2px 7px; }
+    .card { width: calc(100vw - 24px); max-width: none; border-radius: 18px; transition: opacity .3s var(--ease); }
+    .card.m-hide { visibility: hidden; pointer-events: none; }
+    .toast { bottom: calc(var(--sheet-h, 150px) + 14px); }
+    .addbar { white-space: normal; max-width: calc(100vw - 24px); box-sizing: border-box; top: calc(60px + env(safe-area-inset-top, 0px)); }
+    .field input, .field select, .field textarea { font-size: 16px; }
+    .boot .panel { animation-name: sheetIn; }
+    @keyframes sheetIn { from { opacity: 0; transform: translateY(80px); } }
+  }
+  @media (hover: none) {
+    .stop:hover, .dayrow:hover { transform: none; background: transparent; }
+    .stop.active { background: rgba(255,255,255,.06); }
+    .acts { display: none; }
+    .stop.active .acts { display: flex; opacity: 1; }
+    .icon-btn { width: 34px; height: 34px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0ms !important; transition-duration: .01ms !important; }
+  }
+</style>
+
+<div class="app boot" id="app">
+  <canvas id="map" tabindex="0" aria-label="3D trip map of Shanghai and Hangzhou"></canvas>
+  <div class="vignette"></div>
+  <div id="labels" aria-hidden="true"></div>
+
+  <div class="top">
+    <header class="brand glass">
+      <div class="eyebrow">Route atlas · 26 Oct – 1 Nov 2026</div>
+      <h1>Shanghai <i>·</i> Hangzhou</h1>
+      <p>7 days · KUL ⇄ PVG · Juneyao</p>
+    </header>
+    <nav class="days glass" id="days" aria-label="Filter by day"></nav>
+  </div>
+
+  <aside class="panel glass" id="panel" aria-label="Itinerary">
+    <button class="sheet-handle" id="sheetHandle" aria-label="Expand or collapse itinerary"><i></i></button>
+    <div class="panel-head" id="panelHead"></div>
+    <div class="panel-body" id="panelBody"></div>
+    <div class="panel-foot" id="panelFoot"></div>
+  </aside>
+
+  <div class="controls glass" role="toolbar" aria-label="Map controls">
+    <button class="ctl zoom" id="zin" aria-label="Zoom in"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3v10M3 8h10"/></svg></button>
+    <button class="ctl zoom" id="zout" aria-label="Zoom out"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8h10"/></svg></button>
+    <div class="ctl-sep"></div>
+    <button class="ctl" id="tilt" aria-pressed="true" aria-label="Toggle 3D tilt">3D</button>
+    <button class="ctl" id="spin" aria-pressed="false" aria-label="Slowly orbit the view"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13.5 8A5.5 5.5 0 1 1 11 3.4M11 1v2.6h2.6"/></svg></button>
+    <button class="ctl" id="fit" aria-label="Fit route to screen"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 6V2.5H6M10 2.5h3.5V6M13.5 10v3.5H10M6 13.5H2.5V10"/></svg></button>
+  </div>
+
+  <div class="hint">Drag to pan · right-drag or two fingers to rotate · scroll to zoom</div>
+
+  <div class="addbar glass" id="addbar" hidden><span class="pulse"></span><span>Tap the map where the new stop goes</span><button id="addCancel">Cancel</button></div>
+  <div class="card glass" id="card" hidden></div>
+  <div class="toast glass" id="toast" hidden></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(() => {
+  "use strict";
+
+  /* ============================================================ data */
+  const PLAN = [
+    { id: "d1", label: "Day 1", short: "1", date: "Mon 26 Oct", title: "Red-eye arrival · Bund by night", color: "#E2C08A", stops: [
+      { t: "06:00", n: "Pudong Airport", zh: "浦东国际机场", city: "上海", k: "transit", note: "Land on the overnight Juneyao flight (left KL 00:25). Allow about an hour for immigration and bags.", lat: 31.1500, lon: 121.8020 },
+      { t: "08:30", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Drop bags. Early check-in if possible.", lat: 31.2468, lon: 121.4935, via: "car" },
+      { t: "09:00", n: "Da Hu Chun · breakfast", zh: "大壶春（四川中路）", city: "上海", k: "food", note: "Michelin Bib Gourmand, opens 06:30. Fresh pork shengjian (鲜肉生煎) and mini wontons.", lat: 31.2372, lon: 121.4868, via: "car" },
+      { t: "09:45", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Rest off the red-eye until about noon.", lat: 31.2468, lon: 121.4935, via: "car" },
+      { t: "12:30", n: "Nanxiang Steamed Bun Restaurant", zh: "南翔馒头店", city: "上海", k: "food", note: "Lunch: Shanghai's classic xiaolongbao house.", lat: 31.2277, lon: 121.4914, via: "car" },
+      { t: "13:30", n: "Yu Garden & City God Temple bazaar", zh: "豫园 · 城隍庙", city: "上海", k: "sight", note: "The inner classical garden is open by day. Graze the snack stalls in the bazaar.", lat: 31.2268, lon: 121.4925 },
+      { t: "15:00", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Check in and freshen up.", lat: 31.2468, lon: 121.4935, via: "car" },
+      { t: "16:00", n: "The Peninsula · afternoon tea", zh: "上海半岛酒店", city: "上海", k: "food", note: "The Lobby, 5 min walk over Waibaidu Bridge. Reserve ahead.", lat: 31.2425, lon: 121.4905 },
+      { t: "17:15", n: "The Bund at dusk", zh: "外滩", city: "上海", k: "sight", note: "Walk the promenade as Pudong's skyline lights come on.", lat: 31.2385, lon: 121.4912 },
+      { t: "18:00", n: "Nanjing Road East", zh: "南京东路步行街", city: "上海", k: "sight", note: "Best under its neon at night. Walk west toward People's Square.", lat: 31.2376, lon: 121.4790 },
+      { t: "18:45", n: "Yang's Fry-Dumpling · Huanghe Road", zh: "小杨生煎（黄河路店）", city: "上海", k: "food", note: "Street snack / light dinner: shengjianbao, about ¥8 for four. Bite a small hole first; the soup is scalding.", lat: 31.2383, lon: 121.4700 },
+      { t: "19:30", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Taxi back, early night.", lat: 31.2468, lon: 121.4935, via: "car" }
+    ]},
+    { id: "d2", label: "Day 2", short: "2", date: "Tue 27 Oct", title: "Museum, old lanes and the skyline", color: "#EA93AA", stops: [
+      { t: "08:15", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Short taxi to breakfast.", lat: 31.2468, lon: 121.4935 },
+      { t: "08:30", n: "De Xing Guan · breakfast", zh: "德兴馆（广东路）", city: "上海", k: "food", note: "Noodle house since 1878, in the 2026 Michelin Guide. Three-treasure soup noodles (eel, fish, pork hock). Alipay/WeChat Pay only.", lat: 31.2347, lon: 121.4795, via: "car" },
+      { t: "09:30", n: "Shanghai Museum", zh: "上海博物馆（人民广场）", city: "上海", k: "sight", note: "Free, open Tuesdays. Reserve on WeChat (上海博物馆) or show your passport at the visitor centre. About 2 hours.", lat: 31.2285, lon: 121.4755 },
+      { t: "12:00", n: "Ren He Guan · lunch", zh: "人和馆（肇嘉浜路）", city: "上海", k: "food", note: "One Michelin star. Crabmeat and roe over rice, fried eel with water bamboo. Book +86 21 6403 0731 or Meituan.", lat: 31.2045, lon: 121.4595, via: "car" },
+      { t: "13:30", n: "Tianzifang", zh: "田子坊", city: "上海", k: "sight", note: "Shikumen lanes with small shops and cafés.", lat: 31.2080, lon: 121.4690 },
+      { t: "14:30", n: "Xintiandi", zh: "新天地", city: "上海", k: "sight", note: "Restored shikumen quarter; coffee stop.", lat: 31.2195, lon: 121.4750, via: "car" },
+      { t: "15:30", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Rest.", lat: 31.2468, lon: 121.4935, via: "car" },
+      { t: "16:30", n: "Shanghai Tower · 118F", zh: "上海中心大厦", city: "上海", k: "sight", note: "¥180 per person, passport needed. Sunset around 17:10.", lat: 31.2355, lon: 121.5055, via: "car" },
+      { t: "18:30", n: "Yi Long Court · dinner", zh: "逸龙阁 · 上海半岛酒店", city: "上海", k: "food", note: "Michelin-starred Cantonese at The Peninsula.", lat: 31.2425, lon: 121.4905, via: "car" },
+      { t: "20:30", n: "Huangpu night cruise", zh: "十六铺码头", city: "上海", k: "show", note: "About 50 min, ¥135 per person. Sailings about 18:30–21:30.", lat: 31.2285, lon: 121.4990, via: "car" },
+      { t: "21:30", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "", lat: 31.2468, lon: 121.4935, via: "car" }
+    ]},
+    { id: "d3", label: "Day 3", short: "3", date: "Wed 28 Oct", title: "Train to Hangzhou, lakeside afternoon", color: "#74D3B8", stops: [
+      { t: "08:00", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Street-cart breakfast (jianbing or cifantuan), a morning walk on the Bund, then check out at 10:45.", lat: 31.2468, lon: 121.4935 },
+      { t: "11:30", n: "Shanghai Hongqiao Station", zh: "上海虹桥站", city: "上海", k: "transit", note: "About 35–45 min by DiDi. Passport is your ticket.", lat: 31.1945, lon: 121.3200, via: "car" },
+      { t: "12:45", n: "Hangzhou East Station", zh: "杭州东站", city: "杭州", k: "transit", note: "Train G257, 12:00 → 12:45, 45 min direct.", lat: 30.2919, lon: 120.2130, via: "train" },
+      { t: "13:45", n: "Zhiweiguan · lunch", zh: "知味观（仁和路店）", city: "杭州", k: "food", note: "Hangzhou dim sum since 1913. Steamed buns and cat's ear pasta (猫耳朵).", lat: 30.2560, lon: 120.1662, via: "car" },
+      { t: "14:45", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Check in; ask for a lake-view room.", lat: 30.2497, lon: 120.1652 },
+      { t: "15:30", n: "Bai Causeway & Broken Bridge", zh: "白堤 · 断桥", city: "杭州", k: "sight", note: "Flat lakeside stroll. Stay for sunset around 17:15.", lat: 30.2598, lon: 120.1560 },
+      { t: "19:00", n: "Hefang Street snack crawl", zh: "河坊街", city: "杭州", k: "food", note: "Congbao hui'er (葱包桧儿), dingsheng cake (定胜糕), stinky tofu, West Lake lotus-root starch (藕粉).", lat: 30.2425, lon: 120.1705, via: "car" },
+      { t: "19:30", n: "Gaoyin Street", zh: "高银街", city: "杭州", k: "food", note: "Old-name restaurant lane next to Hefang Street; Wang Runxing for a sit-down dish.", lat: 30.2447, lon: 120.1693 },
+      { t: "20:00", n: "West Lake musical fountain", zh: "西湖音乐喷泉", city: "杭州", k: "show", note: "Optional. Free, about 15 min, near Hubin. Shows at 19:00 and 20:00.", lat: 30.2585, lon: 120.1622 }
+    ]},
+    { id: "d4", label: "Day 4", short: "4", date: "Thu 29 Oct", title: "Temples, tea hills and the lake show", color: "#86AEFF", stops: [
+      { t: "07:30", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Early breakfast.", lat: 30.2497, lon: 120.1652 },
+      { t: "08:30", n: "Lingyin Temple & Feilai Feng", zh: "灵隐寺 · 飞来峰", city: "杭州", k: "sight", note: "Reserve 1–7 days ahead. Allow about 2.5 hours.", lat: 30.2413, lon: 120.1013 },
+      { t: "11:30", n: "Longjing Manor", zh: "龙井草堂", city: "杭州", k: "food", note: "Michelin-starred lunch, about ¥700–750 per person. Mobile payment only.", lat: 30.2250, lon: 120.1218 },
+      { t: "14:00", n: "Meijiawu tea terraces · photoshoot", zh: "梅家坞茶园", city: "杭州", k: "sight", note: "Tea tasting and a 1–2 hour travel photoshoot (旅拍).", lat: 30.2043, lon: 120.1105 },
+      { t: "16:30", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Rest before dinner.", lat: 30.2497, lon: 120.1652 },
+      { t: "17:30", n: "Jin Sha · Four Seasons", zh: "金沙厅 · 杭州西子湖四季酒店", city: "杭州", k: "food", note: "Michelin-starred dinner on the north shore.", lat: 30.2598, lon: 120.1375 },
+      { t: "19:40", n: "Enduring Memories of Hangzhou", zh: "最忆是杭州（岳湖）", city: "杭州", k: "show", note: "Zhang Yimou's show staged on the lake.", lat: 30.2593, lon: 120.1412 },
+      { t: "21:00", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "", lat: 30.2497, lon: 120.1652, via: "car" }
+    ]},
+    { id: "d5", label: "Day 5", short: "5", date: "Fri 30 Oct", title: "West Lake by boat, Xixi by evening", color: "#BBA2FF", stops: [
+      { t: "07:00", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Short taxi or 15-min walk to breakfast.", lat: 30.2497, lon: 120.1652 },
+      { t: "07:15", n: "Kui Yuan Guan · pian'erchuan breakfast", zh: "奎元馆（解放路）", city: "杭州", k: "food", note: "Hangzhou's signature noodle bowl (片儿川): pork, bamboo shoots, pickled greens. Century-old noodle house; check opening hours the day before.", lat: 30.2563, lon: 120.1702 },
+      { t: "08:30", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Free one-hour boat from the hotel's lakeside gate.", lat: 30.2497, lon: 120.1652 },
+      { t: "09:00", n: "Three Pools Mirroring the Moon", zh: "三潭印月", city: "杭州", k: "sight", note: "Island stop by boat.", lat: 30.2380, lon: 120.1460, via: "boat" },
+      { t: "10:00", n: "Su Causeway", zh: "苏堤", city: "杭州", k: "sight", note: "2.8 km of willows and six arched bridges. Walk or public bike.", lat: 30.2445, lon: 120.1418, via: "boat" },
+      { t: "11:00", n: "Leifeng Pagoda", zh: "雷峰塔", city: "杭州", k: "sight", note: "At the south end of Su Causeway. Views over the south lake.", lat: 30.2313, lon: 120.1490 },
+      { t: "12:30", n: "Louwailou", zh: "楼外楼（孤山）", city: "杭州", k: "food", note: "Since 1848. West Lake vinegar fish, Dongpo pork, Longjing shrimp.", lat: 30.2530, lon: 120.1455, via: "car" },
+      { t: "14:30", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Rest.", lat: 30.2497, lon: 120.1652 },
+      { t: "15:30", n: "Xixi National Wetland Park", zh: "西溪国家湿地公园", city: "杭州", k: "sight", note: "Electric boat through the canals as the light drops.", lat: 30.2725, lon: 120.0660 },
+      { t: "18:00", n: "Xin Rong Ji · Xixi", zh: "新荣记（西溪）", city: "杭州", k: "food", note: "Michelin-starred Taizhou seafood. Pin is approximate.", lat: 30.2750, lon: 120.0760 },
+      { t: "20:30", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "", lat: 30.2497, lon: 120.1652 }
+    ]},
+    { id: "d6", label: "Day 6", short: "6", date: "Sat 31 Oct", title: "Suzhou gardens on the way back to Shanghai", color: "#F2A071", stops: [
+      { t: "08:15", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Check out. One car with driver all the way to Shanghai via Suzhou (about 2 h to Suzhou); bags stay in the car.", lat: 30.2497, lon: 120.1652 },
+      { t: "10:30", n: "Humble Administrator's Garden", zh: "拙政园", city: "苏州", k: "sight", note: "Suzhou's most famous classical garden (UNESCO). Book timed tickets ahead on the official WeChat mini-program; Saturdays sell out.", lat: 31.3245, lon: 120.6280 },
+      { t: "12:00", n: "Suzhou Museum", zh: "苏州博物馆（本馆）", city: "苏州", k: "sight", note: "I. M. Pei building next door to the garden. Free, but reserve a slot in advance with passport.", lat: 31.3232, lon: 120.6266 },
+      { t: "13:00", n: "Song He Lou · Pingjiang Rd", zh: "松鹤楼（平江路店）", city: "苏州", k: "food", note: "Classic Suzhou cooking since the Qing dynasty. Order squirrel-shaped mandarin fish 松鼠桂鱼 and shrimp with tea leaves. Qi Yun Lou 齐云楼 from your doc is an alternative.", lat: 31.3185, lon: 120.6300 },
+      { t: "14:30", n: "Pingjiang Road", zh: "平江路", city: "苏州", k: "sight", note: "Canal-side lane of teahouses and snack shops; take a short rowboat ride on the canal.", lat: 31.3150, lon: 120.6310 },
+      { t: "16:30", n: "Shantang Street", zh: "七里山塘", city: "苏州", k: "sight", note: "Old canal street, best at dusk when the lanterns come on. Snack your way through for an early dinner.", lat: 31.3195, lon: 120.6030 },
+      { t: "20:30", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Leave Suzhou about 18:30; about 1.5–2 h to Shanghai on a Saturday evening. Last night of the trip.", lat: 31.2468, lon: 121.4935 }
+    ]},
+    { id: "d7", label: "Day 7", short: "7", date: "Sun 1 Nov", title: "French Concession morning, fly home", color: "#62C9DE", stops: [
+      { t: "09:00", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Breakfast, check out and leave bags at the front desk.", lat: 31.2468, lon: 121.4935 },
+      { t: "09:30", n: "Wukang Mansion", zh: "武康大楼", city: "上海", k: "sight", note: "Start of the plane-tree walk down Wukang Road.", lat: 31.2046, lon: 121.4378, via: "car" },
+      { t: "10:30", n: "Anfu Road", zh: "安福路", city: "上海", k: "sight", note: "Boutiques and a coffee stop.", lat: 31.2139, lon: 121.4442 },
+      { t: "11:30", n: "Fu 1015", zh: "福1015（愚园路）", city: "上海", k: "food", note: "Lunch: Michelin-starred Shanghainese in a garden villa. Hairy crab is in season. Pin is approximate.", lat: 31.2215, lon: 121.4251 },
+      { t: "13:00", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Collect bags; car to the airport at 13:30.", lat: 31.2468, lon: 121.4935 },
+      { t: "14:45", n: "Pudong Airport", zh: "浦东国际机场", city: "上海", k: "transit", note: "Juneyao departs 17:25, lands KL 23:25.", lat: 31.1500, lon: 121.8020 }
+    ]}
+  ];
+
+  /* stylised geography (lon, lat) */
+  const SEA = [[123.5,32.6],[121.9,31.78],[121.4,31.88],[120.9,32.02],[120.5,32.05],[119.6,32.3],[119.6,32.12],[120.4,31.98],[120.9,31.86],[121.2,31.64],[121.45,31.44],[121.72,31.28],[121.9,31.12],[121.97,30.93],[121.8,30.86],[121.5,30.8],[121.25,30.69],[121.0,30.56],[120.9,30.46],[120.7,30.40],[120.55,30.34],[120.4,30.30],[120.3,30.27],[120.2,30.23],[120.13,30.205],[120.05,30.14],[119.95,30.05],[119.8,29.95],[119.82,29.93],[119.97,30.03],[120.06,30.12],[120.12,30.19],[120.2,30.215],[120.3,30.25],[120.42,30.27],[120.55,30.29],[120.75,30.30],[121.0,30.30],[121.25,30.32],[121.5,30.2],[121.7,30.05],[122.0,29.98],[122.3,29.9],[123.5,29.5]];
+  const CHONGMING = [[121.18,31.84],[121.5,31.73],[121.95,31.53],[121.86,31.48],[121.5,31.56],[121.25,31.72]];
+  const TAIHU = [[120.08,31.52],[120.3,31.53],[120.42,31.42],[120.45,31.25],[120.52,31.08],[120.4,30.98],[120.15,30.92],[119.95,31.02],[119.92,31.2],[119.98,31.4]];
+  const DIANSHAN = [[120.90,31.15],[120.97,31.14],[121.0,31.10],[120.97,31.06],[120.92,31.07]];
+  const WESTLAKE = [[120.1440,30.2640],[120.1520,30.2625],[120.1580,30.2610],[120.1625,30.2585],[120.1646,30.2545],[120.1643,30.2500],[120.1630,30.2440],[120.1600,30.2385],[120.1555,30.2340],[120.1500,30.2310],[120.1440,30.2300],[120.1385,30.2320],[120.1340,30.2370],[120.1320,30.2430],[120.1325,30.2500],[120.1350,30.2565],[120.1395,30.2615]];
+  const GUSHAN = [[120.1395,30.2560],[120.1450,30.2580],[120.1510,30.2565],[120.1520,30.2540],[120.1470,30.2515],[120.1410,30.2525]];
+  const SU_CAUSEWAY = [[120.1405,30.2622],[120.1432,30.2470],[120.1452,30.2380],[120.1482,30.2305]];
+  const BAI_CAUSEWAY = [[120.1510,30.2560],[120.1555,30.2585],[120.1592,30.2606]];
+  const HUANGPU = [[121.28,30.94],[121.35,30.96],[121.42,31.0],[121.47,31.08],[121.48,31.12],[121.46,31.15],[121.47,31.18],[121.485,31.19],[121.499,31.215],[121.4960,31.2280],[121.4950,31.2360],[121.4965,31.2420],[121.5030,31.2455],[121.5120,31.2465],[121.5230,31.2505],[121.5350,31.2600],[121.5450,31.2750],[121.5300,31.3000],[121.5200,31.3300],[121.5050,31.3700],[121.5050,31.3950]];
+  const SUZHOU_CREEK = [[121.35,31.235],[121.39,31.23],[121.42,31.24],[121.44,31.245],[121.46,31.242],[121.48,31.245],[121.4905,31.2445]];
+  const CITIES = [
+    { lon: 121.47, lat: 31.23, s: 0.16, n: 2600, w: 1 }, { lon: 120.62, lat: 31.31, s: 0.07, n: 800, w: .8 },
+    { lon: 120.19, lat: 30.27, s: 0.08, n: 1100, w: .9 }, { lon: 120.30, lat: 31.57, s: 0.07, n: 600, w: .6 },
+    { lon: 120.76, lat: 30.75, s: 0.05, n: 320, w: .5 }, { lon: 120.09, lat: 30.87, s: 0.05, n: 260, w: .5 },
+    { lon: 120.98, lat: 31.38, s: 0.05, n: 360, w: .5 }, { lon: 120.58, lat: 30.00, s: 0.06, n: 360, w: .5 },
+    { lon: 121.55, lat: 29.87, s: 0.08, n: 500, w: .6 }, { lon: 120.43, lat: 30.88, s: 0.02, n: 90, w: .4 },
+    { lon: 120.48, lat: 30.74, s: 0.02, n: 90, w: .4 }, { lon: 121.66, lat: 31.14, s: 0.03, n: 160, w: .5 }
+  ];
+  const PLACES = [
+    { n: "Shanghai", lon: 121.44, lat: 31.29, d0: 40, d1: 2500, c: "city" },
+    { n: "Suzhou", lon: 120.62, lat: 31.37, d0: 40, d1: 2500, c: "city" },
+    { n: "Hangzhou", lon: 120.20, lat: 30.33, d0: 40, d1: 2500, c: "city" },
+    { n: "Jiaxing", lon: 120.76, lat: 30.79, d0: 60, d1: 2500, c: "city" },
+    { n: "Huzhou", lon: 120.09, lat: 30.92, d0: 60, d1: 2500, c: "city" },
+    { n: "Wuxi", lon: 120.30, lat: 31.62, d0: 60, d1: 2500, c: "city" },
+    { n: "East China Sea", lon: 122.25, lat: 30.55, d0: 80, d1: 3000, c: "water" },
+    { n: "Hangzhou Bay", lon: 121.15, lat: 30.47, d0: 60, d1: 3000, c: "water" },
+    { n: "Taihu Lake", lon: 120.2, lat: 31.22, d0: 40, d1: 3000, c: "water" },
+    { n: "Yangtze River", lon: 120.72, lat: 31.95, d0: 80, d1: 3000, c: "water" },
+    { n: "Qiantang River", lon: 120.33, lat: 30.262, d0: 8, d1: 220, c: "water" },
+    { n: "West Lake", lon: 120.1490, lat: 30.2445, d0: 0.3, d1: 18, c: "water" },
+    { n: "Huangpu River", lon: 121.5125, lat: 31.2505, d0: 0.3, d1: 25, c: "water" }
+  ];
+  const KIND = { hotel: "Stay", food: "Eat", sight: "See", show: "Show", transit: "Transit" };
+  const MODE = { walk: "walk", car: "drive", boat: "boat", train: "train" };
+  const STORE = "jiangnan-atlas-v7";
+
+  /* ============================================================ state */
+  const clone = o => JSON.parse(JSON.stringify(o));
+  let days = load();
+  let sel = "all", selStop = null, addMode = false, pending = null;
+  let lastRemoved = null, toastTimer = 0, resetArmed = false, resetTimer = 0;
+  let tour = null, spinning = false, tiltOn = true;
+  const sheet = { state: "peek", h: 0 };
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const isMobile = () => window.innerWidth <= 760;
+
+  function load() {
+    try { const raw = localStorage.getItem(STORE); if (raw) { const p = JSON.parse(raw); if (Array.isArray(p) && p.length === PLAN.length) return p; } } catch (e) {}
+    return clone(PLAN);
+  }
+  function save() { try { localStorage.setItem(STORE, JSON.stringify(days)); } catch (e) {} }
+
+  /* ============================================================ geo */
+  const DEG = Math.PI / 180;
+  const LON0 = 120.8, LAT0 = 30.8, KX = 111.32 * Math.cos(LAT0 * DEG), KZ = 111.32;
+  const mapped = s => s && s.lat != null && s.lon != null;
+  const wx = lon => (lon - LON0) * KX, wz = lat => -(lat - LAT0) * KZ;
+  const fromW = (x, z) => ({ lon: LON0 + x / KX, lat: LAT0 - z / KZ });
+  function hav(a, b) {
+    const R = 6371, dLat = (b.lat - a.lat) * DEG, dLon = (b.lon - a.lon) * DEG;
+    const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * DEG) * Math.cos(b.lat * DEG) * Math.sin(dLon / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(h));
+  }
+  const fmtKm = d => d < 1 ? `${Math.max(10, Math.round(d * 100) * 10)} m` : `${d < 10 ? d.toFixed(1) : Math.round(d)} km`;
+  function legs(day) {
+    const out = []; let prev = null, pi = -1;
+    day.stops.forEach((s, i) => {
+      if (!mapped(s)) return;
+      if (prev) { const d = hav(prev, s); out.push({ from: pi, to: i, d, mode: s.via || (d < 1.6 ? "walk" : "car") }); }
+      prev = s; pi = i;
+    });
+    return out;
+  }
+  const dayKm = day => legs(day).reduce((a, l) => a + l.d, 0);
+  function inPoly(lon, lat, poly) {
+    let inside = false;
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      const [xi, yi] = poly[i], [xj, yj] = poly[j];
+      if ((yi > lat) !== (yj > lat) && lon < (xj - xi) * (lat - yi) / (yj - yi) + xi) inside = !inside;
+    }
+    return inside;
+  }
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const shortName = n => n.length > 34 ? n.slice(0, 32) + "…" : n;
+  const easeInOut = u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+  const easeOut = u => 1 - Math.pow(1 - u, 3);
+  const backOut = u => { const c1 = 1.9, c3 = c1 + 1; return u >= 1 ? 1 : 1 + c3 * Math.pow(u - 1, 3) + c1 * Math.pow(u - 1, 2); };
+  const clamp01 = v => Math.max(0, Math.min(1, v));
+
+  /* ============================================================ three */
+  const canvas = document.getElementById("map");
+  if (!window.THREE || !THREE.OrbitControls) {
+    document.getElementById("app").insertAdjacentHTML("beforeend", '<div class="fallback">The 3D map could not load. Check your connection and reopen the page.</div>');
+    return;
+  }
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile() ? 1.75 : 2));
+  const scene = new THREE.Scene();
+  const BG = new THREE.Color(0x07090d);
+  scene.background = BG;
+  const camera = new THREE.PerspectiveCamera(38, 1, 0.01, 6000);
+  const controls = new THREE.OrbitControls(camera, canvas);
+  controls.enableDamping = true; controls.dampingFactor = 0.085;
+  controls.screenSpacePanning = false;
+  controls.minDistance = 0.35; controls.maxDistance = 1400;
+  controls.maxPolarAngle = 1.3; controls.rotateSpeed = 0.55; controls.zoomSpeed = 1.1;
+  controls.mouseButtons = { LEFT: THREE.MOUSE.PAN, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
+  controls.touches = { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE };
+
+  const U = { time: { value: 0 }, fog: { value: 0.002 }, fogColor: { value: BG }, scale: { value: 1 } };
+  let W = 1, H = 1, camDist = 300;
+
+  function radialTex(inner, outer, size = 128) {
+    const c = document.createElement("canvas"); c.width = c.height = size;
+    const g = c.getContext("2d"); const gr = g.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+    gr.addColorStop(0, inner); gr.addColorStop(1, outer); g.fillStyle = gr; g.fillRect(0, 0, size, size);
+    const t = new THREE.CanvasTexture(c); return t;
+  }
+  const GLOW = radialTex("rgba(255,255,255,1)", "rgba(255,255,255,0)");
+
+  /* ---- flat map layers (painter's order, no depth) */
+  const flat = (mat, order) => { mat.depthTest = false; mat.depthWrite = false; return order; };
+  function shapeMesh(poly, mat, order) {
+    const shape = new THREE.Shape(poly.map(([lon, lat]) => new THREE.Vector2(wx(lon), -wz(lat))));
+    const m = new THREE.Mesh(new THREE.ShapeGeometry(shape), mat);
+    m.rotation.x = -Math.PI / 2; m.renderOrder = flat(mat, order); scene.add(m); return m;
+  }
+  function lineOf(pts, color, opacity, order, closed) {
+    const arr = pts.map(([lon, lat]) => new THREE.Vector3(wx(lon), 0, wz(lat)));
+    if (closed) arr.push(arr[0].clone());
+    const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity, fog: true });
+    const l = new THREE.Line(new THREE.BufferGeometry().setFromPoints(arr), mat);
+    l.renderOrder = flat(mat, order); scene.add(l); return l;
+  }
+  function ribbon(pts, widthKm, mat, order) {
+    const P = pts.map(([lon, lat]) => new THREE.Vector2(wx(lon), wz(lat)));
+    const pos = [], idx = [];
+    P.forEach((p, i) => {
+      const a = P[Math.max(0, i - 1)], b = P[Math.min(P.length - 1, i + 1)];
+      const d = new THREE.Vector2(b.x - a.x, b.y - a.y).normalize();
+      const nx = -d.y * widthKm / 2, nz = d.x * widthKm / 2;
+      pos.push(p.x + nx, 0, p.y + nz, p.x - nx, 0, p.y - nz);
+      if (i) { const k = i * 2; idx.push(k - 2, k - 1, k, k - 1, k + 1, k); }
+    });
+    const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx);
+    const m = new THREE.Mesh(g, mat); m.renderOrder = flat(mat, order); scene.add(m); return m;
+  }
+
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), new THREE.ShaderMaterial({
+    uniforms: { uFog: U.fog, uFogColor: U.fogColor },
+    vertexShader: `varying float vD; varying vec3 vW; void main(){ vec4 w = modelMatrix*vec4(position,1.); vW=w.xyz; vec4 mv=viewMatrix*w; vD=-mv.z; gl_Position=projectionMatrix*mv; }`,
+    fragmentShader: `uniform float uFog; uniform vec3 uFogColor; varying float vD; varying vec3 vW;
+      void main(){ float r = length(vW.xz - vec2(-10.,20.)); vec3 c = mix(vec3(.071,.086,.11), vec3(.052,.062,.08), smoothstep(0.,420.,r));
+        float f = 1.-exp(-uFog*uFog*vD*vD); gl_FragColor = vec4(mix(c,uFogColor,f),1.); }`
+  }));
+  ground.rotation.x = -Math.PI / 2; ground.renderOrder = flat(ground.material, 0); scene.add(ground);
+
+  const waterMat = new THREE.ShaderMaterial({
+    uniforms: { uTime: U.time, uFog: U.fog, uFogColor: U.fogColor, uScale: U.scale },
+    vertexShader: `varying float vD; varying vec3 vW; void main(){ vec4 w = modelMatrix*vec4(position,1.); vW=w.xyz; vec4 mv=viewMatrix*w; vD=-mv.z; gl_Position=projectionMatrix*mv; }`,
+    fragmentShader: `uniform float uTime,uFog,uScale; uniform vec3 uFogColor; varying float vD; varying vec3 vW;
+      void main(){ vec2 p = vW.xz*uScale;
+        float w = sin(p.x*1.3+uTime*.55)*sin(p.y*1.1-uTime*.4) + .6*sin((p.x+p.y)*2.7-uTime*.9) + .35*sin(p.x*4.1-p.y*3.3+uTime*1.2);
+        float sh = smoothstep(1.15,1.75,w);
+        vec3 c = vec3(.036,.075,.108) + vec3(.09,.15,.2)*sh*.55;
+        float f = 1.-exp(-uFog*uFog*vD*vD); gl_FragColor = vec4(mix(c,uFogColor,f),1.); }`
+  });
+  const landMat = new THREE.MeshBasicMaterial({ color: 0x10151c });
+  [SEA, TAIHU, DIANSHAN, WESTLAKE].forEach(p => shapeMesh(p, waterMat, 1));
+  ribbon(HUANGPU, 0.4, waterMat, 1);
+  ribbon(SUZHOU_CREEK, 0.08, waterMat, 1);
+  [CHONGMING, GUSHAN].forEach(p => shapeMesh(p, landMat, 2));
+  const causeMat = new THREE.MeshBasicMaterial({ color: 0x1b222b });
+  ribbon(SU_CAUSEWAY, 0.045, causeMat, 3); ribbon(BAI_CAUSEWAY, 0.04, causeMat, 3);
+  const island = new THREE.Mesh(new THREE.CircleGeometry(0.11, 24), causeMat.clone());
+  island.rotation.x = -Math.PI / 2; island.position.set(wx(120.1460), 0, wz(30.2380)); island.renderOrder = flat(island.material, 3); scene.add(island);
+  [SEA, TAIHU, DIANSHAN, WESTLAKE, CHONGMING].forEach(p => lineOf(p, 0x7aa8d2, 0.26, 4, true));
+  lineOf(HUANGPU, 0x7aa8d2, 0.22, 4, false);
+
+  /* graticule */
+  (() => {
+    const pts = [];
+    for (let lon = 119.6; lon <= 122.6; lon += 0.1) pts.push(wx(lon), 0, wz(29.6), wx(lon), 0, wz(32.3));
+    for (let lat = 29.6; lat <= 32.3; lat += 0.1) pts.push(wx(119.6), 0, wz(lat), wx(122.6), 0, wz(lat));
+    const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
+    const mat = new THREE.LineBasicMaterial({ color: 0xece6da, transparent: true, opacity: 0.035 });
+    const l = new THREE.LineSegments(g, mat); l.renderOrder = flat(mat, 2.5); scene.add(l);
+  })();
+
+  /* twinkling city lights */
+  (() => {
+    const pos = [], ph = [], sz = [];
+    const gauss = () => { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+    const wet = (lon, lat) => (inPoly(lon, lat, SEA) && !inPoly(lon, lat, CHONGMING)) || inPoly(lon, lat, TAIHU) || inPoly(lon, lat, WESTLAKE);
+    let seed = 7; Math.random = (orig => { return () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }; })(Math.random);
+    CITIES.forEach(c => {
+      for (let i = 0; i < c.n; i++) {
+        const lon = c.lon + gauss() * c.s, lat = c.lat + gauss() * c.s * 0.8;
+        if (wet(lon, lat)) continue;
+        pos.push(wx(lon), 0, wz(lat)); ph.push(Math.random() * 6.28); sz.push((0.6 + Math.random() * 1.4) * c.w);
+      }
+    });
+    for (let i = 0; i < 1400; i++) {
+      const lon = 119.7 + Math.random() * 2.3, lat = 29.9 + Math.random() * 2.2;
+      if (wet(lon, lat)) continue;
+      pos.push(wx(lon), 0, wz(lat)); ph.push(Math.random() * 6.28); sz.push(0.35 + Math.random() * 0.5);
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute("aPh", new THREE.Float32BufferAttribute(ph, 1));
+    g.setAttribute("aSz", new THREE.Float32BufferAttribute(sz, 1));
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { uTime: U.time, uFog: U.fog, uPx: { value: renderer.getPixelRatio() } },
+      vertexShader: `attribute float aPh; attribute float aSz; uniform float uTime,uPx,uFog; varying float vA;
+        void main(){ vec4 mv = modelViewMatrix*vec4(position,1.); float d=-mv.z; float f = exp(-uFog*uFog*d*d);
+          vA = (.55+.45*sin(uTime*1.3+aPh))*f; gl_PointSize = aSz*2.2*uPx; gl_Position = projectionMatrix*mv; }`,
+      fragmentShader: `varying float vA; void main(){ float r = length(gl_PointCoord-.5); if(r>.5) discard; gl_FragColor = vec4(1.,.82,.58, vA*smoothstep(.5,0.,r)*.75); }`,
+      transparent: true, blending: THREE.AdditiveBlending
+    });
+    const p = new THREE.Points(g, mat); p.renderOrder = flat(mat, 5); scene.add(p);
+    CITIES.slice(0, 3).forEach(c => {
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW, color: 0xffcf8f, transparent: true, opacity: 0.09, blending: THREE.AdditiveBlending, depthTest: false, depthWrite: false }));
+      sp.position.set(wx(c.lon), 0, wz(c.lat)); sp.scale.set(c.s * 260, c.s * 260, 1); sp.renderOrder = 4.5; scene.add(sp);
+    });
+  })();
+
+  /* floating dust above the map */
+  const dust = (() => {
+    const n = 260, pos = [];
+    for (let i = 0; i < n; i++) pos.push((Math.random() - .5) * 2, Math.random(), (Math.random() - .5) * 2);
+    const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { uTime: U.time, uPx: { value: renderer.getPixelRatio() } },
+      vertexShader: `uniform float uTime,uPx; varying float vA; void main(){ vec3 p = position; p.y = fract(p.y + uTime*.012 + p.x*.3);
+        p.x += sin(uTime*.2+p.z*6.)*.03; vA = sin(p.y*3.14159)*.5; vec4 mv = modelViewMatrix*vec4(p,1.); gl_PointSize = 2.*uPx; gl_Position = projectionMatrix*mv; }`,
+      fragmentShader: `varying float vA; void main(){ float r=length(gl_PointCoord-.5); if(r>.5) discard; gl_FragColor=vec4(.95,.88,.74,vA*.35*smoothstep(.5,0.,r)); }`,
+      transparent: true, blending: THREE.AdditiveBlending, depthWrite: false
+    });
+    const p = new THREE.Points(g, mat); p.renderOrder = 40; scene.add(p); return p;
+  })();
+
+  /* ============================================================ routes + pins */
+  const routeVert = `uniform float uRadius; varying vec2 vUv; varying float vD;
+    void main(){ vec3 c = position - normal; vec3 p = c + normal*uRadius; vec4 mv = modelViewMatrix*vec4(p,1.); vD=-mv.z; vUv = uv; gl_Position = projectionMatrix*mv; }`;
+  const routeFrag = `uniform vec3 uColor; uniform float uTime,uProgress,uLen,uMode,uOpacity,uGlow,uFog,uPeriod; uniform vec3 uFogColor; varying vec2 vUv; varying float vD;
+    void main(){ if (vUv.x > uProgress) discard;
+      float s = vUv.x*uLen; float a = uOpacity;
+      if (uGlow < .5) {
+        if (uMode > .5 && uMode < 1.5) { if (fract(s/uPeriod - uTime*.7) > .42) discard; }
+        if (uMode > 1.5) { if (fract(s/(uPeriod*2.2) - uTime*.25) > .62) discard; }
+      }
+      float pulse = pow(1. - fract(s/(uPeriod*7.) - uTime*.45), 10.);
+      float head = smoothstep(uProgress-.05, uProgress, vUv.x) * step(uProgress, .999);
+      vec3 col = uColor*(1.+pulse*.9) + vec3(1.)*(pulse*.35 + head*.9);
+      if (uGlow > .5) { a *= (.55 + pulse*.9 + head*1.5); }
+      float f = 1.-exp(-uFog*uFog*vD*vD);
+      gl_FragColor = vec4(mix(col,uFogColor,f), a*(1.-f*.85)); }`;
+  const beamMat = new THREE.ShaderMaterial({
+    uniforms: { uColor: { value: new THREE.Color() } },
+    vertexShader: `varying float vY; void main(){ vY = position.y + .5; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
+    fragmentShader: `uniform vec3 uColor; varying float vY; void main(){ gl_FragColor = vec4(uColor, (1.-vY)*.55 + .08); }`,
+    transparent: true, blending: THREE.AdditiveBlending, depthTest: false, depthWrite: false, side: THREE.DoubleSide
+  });
+  const beamGeo = new THREE.CylinderGeometry(1, 1, 1, 18, 1, true);
+  const ringGeo = new THREE.RingGeometry(0.72, 1, 48);
+
+  const dyn = new THREE.Group(); scene.add(dyn);
+  let legObjs = [], pinObjs = [], traveler = null, builtAt = 0, texCache = new Map();
+
+  function pinTexture(label, color, hotel, small) {
+    const key = [label, color, hotel, small].join("|");
+    if (texCache.has(key)) return texCache.get(key);
+    const S = 128, c = document.createElement("canvas"); c.width = c.height = S; const g = c.getContext("2d");
+    const col = new THREE.Color(color).getStyle();
+    const gr = g.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
+    gr.addColorStop(0, col.replace("rgb", "rgba").replace(")", ",0.55)")); gr.addColorStop(1, "rgba(0,0,0,0)");
+    g.fillStyle = gr; g.fillRect(0, 0, S, S);
+    g.beginPath(); g.arc(S / 2, S / 2, small ? 20 : 36, 0, Math.PI * 2); g.fillStyle = hotel ? "#f3eee3" : col; g.fill();
+    if (hotel) { g.lineWidth = 7; g.strokeStyle = col; g.stroke(); }
+    if (!small && label) {
+      g.fillStyle = "#07090d"; g.textAlign = "center"; g.textBaseline = "middle";
+      g.font = `600 ${label.length > 3 ? 22 : label.length > 2 ? 26 : 34}px "IBM Plex Mono", ui-monospace, monospace`;
+      g.fillText(label, S / 2, S / 2 + 2);
+    }
+    const t = new THREE.CanvasTexture(c); t.anisotropy = 4; texCache.set(key, t); return t;
+  }
+
+  const labelsEl = document.getElementById("labels");
+  function clearDyn() {
+    dyn.children.slice().forEach(o => {
+      dyn.remove(o);
+      o.traverse(n => { if (n.geometry && !n.isSprite && n.geometry !== beamGeo && n.geometry !== ringGeo) n.geometry.dispose(); if (n.material && n.material !== beamMat) { if (Array.isArray(n.material)) n.material.forEach(m => m.dispose()); else n.material.dispose(); } });
+    });
+    legObjs.forEach(l => l.chip && l.chip.remove());
+    pinObjs.forEach(p => p.label && p.label.remove());
+    legObjs = []; pinObjs = []; traveler = null;
+  }
+
+  function buildDyn() {
+    clearDyn();
+    builtAt = performance.now() / 1000;
+    const list = sel === "all" ? days.map((d, i) => i) : [sel];
+    const all = sel === "all";
+    const path = new THREE.CurvePath();
+    list.forEach((di, dOrder) => {
+      const day = days[di];
+      const color = new THREE.Color(day.color);
+      legs(day).forEach((l, k) => {
+        if (l.d < 0.005) return;
+        const a = day.stops[l.from], b = day.stops[l.to];
+        const A = new THREE.Vector3(wx(a.lon), 0, wz(a.lat)), B = new THREE.Vector3(wx(b.lon), 0, wz(b.lat));
+        const h = l.mode === "car" ? Math.min(l.d * 0.2, 26) : l.d * (l.mode === "boat" ? 0.1 : 0.14);
+        const M = A.clone().add(B).multiplyScalar(0.5); M.y = h * 2;
+        const curve = new THREE.QuadraticBezierCurve3(A, M, B);
+        const segs = Math.max(24, Math.min(160, Math.round(l.d * 3)));
+        const geo = new THREE.TubeGeometry(curve, segs, 1, 8, false);
+        const mk = glow => new THREE.ShaderMaterial({
+          uniforms: { uColor: { value: color }, uTime: U.time, uProgress: { value: reduce ? 1 : 0 }, uLen: { value: l.d }, uMode: { value: l.mode === "walk" ? 1 : l.mode === "boat" ? 2 : 0 },
+            uOpacity: { value: glow ? (all ? .12 : .2) : (all ? .7 : .95) }, uGlow: { value: glow ? 1 : 0 }, uFog: U.fog, uFogColor: U.fogColor, uRadius: { value: 1 }, uPeriod: { value: 1 } },
+          vertexShader: routeVert, fragmentShader: routeFrag, transparent: true, depthWrite: false, depthTest: false,
+          blending: glow ? THREE.AdditiveBlending : THREE.NormalBlending
+        });
+        const core = new THREE.Mesh(geo, mk(false)), glow = new THREE.Mesh(geo, mk(true));
+        core.renderOrder = 11; glow.renderOrder = 10;
+        const shadowPts = curve.getPoints(32).map(p => new THREE.Vector3(p.x, 0, p.z));
+        const shadow = new THREE.Line(new THREE.BufferGeometry().setFromPoints(shadowPts), new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0, depthTest: false, depthWrite: false }));
+        shadow.renderOrder = 6;
+        dyn.add(glow, core, shadow);
+        let chip = null;
+        if (!all) {
+          chip = document.createElement("div"); chip.className = "dchip off"; chip.style.setProperty("--c", day.color);
+          chip.innerHTML = `${fmtKm(l.d)}<em>${MODE[l.mode]}</em>`; labelsEl.appendChild(chip);
+        }
+        legObjs.push({ core, glow, shadow, curve, chip, delay: all ? dOrder * 0.28 + k * 0.06 : 0.35 + k * 0.32, dur: all ? 1.1 : 0.9, d: l.d, A, B, cw: 0 });
+        if (!all) path.add(curve);
+      });
+
+      // pins
+      const groups = new Map();
+      day.stops.forEach((s, i) => {
+        if (!mapped(s)) return;
+        const key = (all ? "" : di + ":") + s.lat.toFixed(4) + "," + s.lon.toFixed(4);
+        let g = groups.get(key);
+        if (!g) { g = { s, di, idx: [], ids: [] }; groups.set(key, g); }
+        g.ids.push({ d: di, i }); g.idx.push(i + 1);
+      });
+      let order = 0;
+      groups.forEach(g => {
+        if (all && pinObjs.some(p => p.key === `${g.s.lat.toFixed(4)},${g.s.lon.toFixed(4)}`)) {
+          const existing = pinObjs.find(p => p.key === `${g.s.lat.toFixed(4)},${g.s.lon.toFixed(4)}`);
+          existing.ids.push(...g.ids); return;
+        }
+        const hotel = g.s.k === "hotel";
+        const G = new THREE.Vector3(wx(g.s.lon), 0, wz(g.s.lat));
+        const bm = beamMat.clone(); bm.uniforms = { uColor: { value: color } };
+        const beam = new THREE.Mesh(beamGeo, bm); beam.renderOrder = 20;
+        const ring = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthTest: false, depthWrite: false, side: THREE.DoubleSide }));
+        ring.rotation.x = -Math.PI / 2; ring.renderOrder = 19;
+        const head = new THREE.Sprite(new THREE.SpriteMaterial({ map: pinTexture(all ? "" : g.idx.join("·"), day.color, hotel, all), sizeAttenuation: false, depthTest: false, depthWrite: false, transparent: true }));
+        head.renderOrder = 30;
+        const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW, color, sizeAttenuation: false, transparent: true, opacity: .0, blending: THREE.AdditiveBlending, depthTest: false, depthWrite: false }));
+        halo.renderOrder = 29;
+        beam.position.copy(G); ring.position.copy(G); head.position.copy(G); halo.position.copy(G);
+        dyn.add(beam, ring, halo, head);
+        const label = document.createElement("div");
+        label.className = "plabel off" + (all ? " small" : ""); label.style.setProperty("--c", day.color);
+        label.innerHTML = `${all ? "" : `<span class="t">${esc(g.s.t || "")}</span>`}<span>${esc(shortName(g.s.n))}</span>`;
+        labelsEl.appendChild(label);
+        pinObjs.push({ key: `${g.s.lat.toFixed(4)},${g.s.lon.toFixed(4)}`, G, beam, ring, head, halo, label, ids: g.ids, s: g.s, hotel, all, phase: Math.random() * 6,
+          delay: all ? dOrder * 0.28 + order * 0.03 : 0.2 + order * 0.14, sx: 0, sy: 0, vis: false, lw: 0, lh: 0 });
+        order++;
+      });
+    });
+
+    if (!all && path.curves.length && !reduce) {
+      const mk = (op, sc) => { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW, color: 0xfff6e6, sizeAttenuation: false, transparent: true, opacity: op, blending: THREE.AdditiveBlending, depthTest: false, depthWrite: false })); sp.renderOrder = 35; sp.userData.sc = sc; dyn.add(sp); return sp; };
+      const trail = [];
+      for (let k = 0; k < 14; k++) trail.push(mk(0.5 * (1 - k / 14), 0.028 * (1 - k / 18)));
+      const total = path.getLength();
+      traveler = { path, trail, speed: 1 / Math.max(7, Math.min(16, 5 + path.curves.length * 1.3)), total };
+    }
+    // measure labels once
+    requestAnimationFrame(() => {
+      pinObjs.forEach(p => { p.label.classList.remove("off"); p.lw = p.label.offsetWidth; p.lh = p.label.offsetHeight; p.label.classList.add("off"); });
+      legObjs.forEach(l => { if (l.chip) { l.chip.classList.remove("off"); l.cw = l.chip.offsetWidth; l.chip.classList.add("off"); } });
+    });
+  }
+
+  /* ============================================================ camera */
+  let viewFull = { w: 1, h: 1 }, vo = null;
+  function usableRect() {
+    const topEl = document.querySelector(".top").getBoundingClientRect();
+    const r = { l: 16, t: topEl.bottom + 10, r: W - 16, b: H - 24 };
+    if (isMobile()) {
+      r.l = 12; r.r = W - 60;
+      r.b = H - (sheet.h || 150) - 10;
+      if (!card.hidden && !card.classList.contains("m-hide") && selStop) r.b -= card.offsetHeight + 12;
+    } else r.r = document.getElementById("panel").getBoundingClientRect().left - 70;
+    if (r.b - r.t < 140) r.t = r.b - 140;
+    return r;
+  }
+  function applyView(instant) {
+    const R = usableRect();
+    const tx = (R.l + R.r) / 2, ty = (R.t + R.b) / 2;
+    if (!vo || instant || reduce) vo = { x: tx, y: ty };
+    else { vo.x += (tx - vo.x) * 0.14; vo.y += (ty - vo.y) * 0.14; }
+    const fw = W + 2 * Math.abs(W / 2 - vo.x), fh = H + 2 * Math.abs(H / 2 - vo.y);
+    camera.aspect = fw / fh;
+    camera.setViewOffset(fw, fh, fw / 2 - vo.x, fh / 2 - vo.y, W, H);
+    viewFull = { w: fw, h: fh, R };
+    camera.updateProjectionMatrix();
+  }
+  function resize() {
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    renderer.setSize(W, H, false);
+    document.documentElement.style.setProperty("--ctl-top", `${Math.round(document.querySelector(".top").getBoundingClientRect().bottom + 10)}px`);
+    applyView(true);
+  }
+
+  function sph() {
+    const o = camera.position.clone().sub(controls.target); const d = o.length();
+    return { d, polar: Math.acos(Math.min(1, Math.max(-1, o.y / d))), az: Math.atan2(o.x, o.z) };
+  }
+  function place(target, d, polar, az) {
+    controls.target.copy(target);
+    camera.position.set(target.x + d * Math.sin(polar) * Math.sin(az), target.y + d * Math.cos(polar), target.z + d * Math.sin(polar) * Math.cos(az));
+    camera.lookAt(target);
+  }
+  let flight = null;
+  function flyTo(to, dur = 1.4) {
+    const s = sph();
+    const from = { t: controls.target.clone(), d: s.d, polar: s.polar, az: s.az };
+    const T = { t: to.t || from.t.clone(), d: to.d ?? from.d, polar: to.polar ?? from.polar, az: to.az ?? from.az };
+    let daz = T.az - from.az; while (daz > Math.PI) daz -= 2 * Math.PI; while (daz < -Math.PI) daz += 2 * Math.PI;
+    T.az = from.az + daz;
+    if (reduce || dur <= 0) { place(T.t, T.d, T.polar, T.az); flight = null; return; }
+    const move = from.t.distanceTo(T.t);
+    flight = { from, to: T, t0: performance.now() / 1000, dur, lift: Math.min(1.2, move / Math.max(from.d, T.d)) };
+  }
+  function stepFlight(now) {
+    if (!flight) return;
+    const u = clamp01((now - flight.t0) / flight.dur), e = easeInOut(u);
+    const f = flight.from, t = flight.to;
+    const tgt = f.t.clone().lerp(t.t, e);
+    const d = Math.exp(Math.log(f.d) + (Math.log(t.d) - Math.log(f.d)) * e) * (1 + flight.lift * Math.sin(Math.PI * e) * 0.9);
+    place(tgt, d, f.polar + (t.polar - f.polar) * e, f.az + (t.az - f.az) * e);
+    if (u >= 1) flight = null;
+  }
+
+  function fitPoints(pts, dur = 1.6, opts = {}) {
+    if (!pts.length) return;
+    let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+    pts.forEach(p => { const x = wx(p.lon), z = wz(p.lat); x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); });
+    const R = usableRect();
+    const uw = Math.max(160, R.r - R.l), uh = Math.max(140, R.b - R.t);
+    const polar = tiltOn ? 0.92 : 0.001;
+    const fhT = H + 2 * Math.abs(H / 2 - (R.t + R.b) / 2);
+    const tanV = Math.tan(camera.fov * DEG / 2) * H / fhT;
+    const sx = Math.max(0.9, x1 - x0), sz = Math.max(0.9, z1 - z0);
+    const dv = (sz * Math.cos(polar) / 2 + sx * 0.12 * Math.sin(polar)) / (tanV * uh / H);
+    const dh = (sx / 2) / (tanV * uw / H);
+    const d = Math.max(0.8, Math.min(1300, Math.max(dv, dh) * 1.32));
+    const t = new THREE.Vector3((x0 + x1) / 2, 0, (z0 + z1) / 2 + (tiltOn ? sz * 0.04 : 0));
+    flyTo({ t, d, polar, az: opts.az ?? 0 }, dur);
+  }
+  function selectionPts() {
+    const pts = []; (sel === "all" ? days : [days[sel]]).forEach(d => d.stops.forEach(s => mapped(s) && pts.push(s))); return pts;
+  }
+
+  /* ============================================================ frame loop */
+  const tmp = new THREE.Vector3();
+  function toScreen(v) {
+    tmp.copy(v).project(camera);
+    return { x: (tmp.x + 1) / 2 * W, y: (1 - tmp.y) / 2 * H, ok: tmp.z < 1 && tmp.z > -1 };
+  }
+  const placeEls = PLACES.map(p => {
+    const el = document.createElement("div"); el.className = `place ${p.c} off`; el.textContent = p.n; labelsEl.appendChild(el);
+    return { ...p, el, v: new THREE.Vector3(wx(p.lon), 0, wz(p.lat)) };
+  });
+  const card = document.getElementById("card");
+
+  function frame() {
+    const now = performance.now() / 1000;
+    stepFlight(now);
+    if (spinning && !flight) { const s = sph(); place(controls.target, s.d, s.polar, s.az + 0.0016); }
+    controls.update();
+    applyView(false);
+    camDist = camera.position.distanceTo(controls.target);
+    camera.near = Math.max(0.005, camDist * 0.01); camera.far = camDist * 80; camera.updateProjectionMatrix();
+    U.fog.value = 0.2 / camDist; U.scale.value = 26 / camDist;
+    if (!reduce) U.time.value = now;
+    dust.scale.set(camDist * 1.4, camDist * 0.5, camDist * 1.4); dust.position.copy(controls.target);
+
+    const t = now - builtAt;
+    const radius = camDist * (sel === "all" ? 0.0011 : 0.0017);
+    legObjs.forEach(l => {
+      const p = reduce ? 1 : easeOut(clamp01((t - l.delay) / l.dur));
+      [l.core, l.glow].forEach((m, gi) => {
+        m.material.uniforms.uProgress.value = p;
+        m.material.uniforms.uRadius.value = gi ? radius * 3.4 : radius;
+        m.material.uniforms.uPeriod.value = radius * 8;
+      });
+      l.shadow.material.opacity = 0.22 * p;
+      if (l.chip) {
+        const m = toScreen(l.curve.getPoint(0.5)), a = toScreen(l.A), b = toScreen(l.B);
+        const len = Math.hypot(a.x - b.x, a.y - b.y);
+        l.cx = m.x; l.cy = m.y; l.show = m.ok && p >= 1 && len > 80 && m.x > -40 && m.x < W + 40 && m.y > 0 && m.y < H;
+      }
+    });
+
+    const beamH = camDist * (sel === "all" ? 0.03 : 0.055);
+    const beamR = camDist * 0.0011;
+    hits = [];
+    pinObjs.forEach(p => {
+      const u = reduce ? 1 : clamp01((t - p.delay) / 0.7);
+      const pop = backOut(u), grow = easeOut(u);
+      const isSel = selStop && p.ids.some(x => x.d === selStop.d && x.i === selStop.i);
+      const h = beamH * grow * (isSel ? 1.25 : 1);
+      p.beam.scale.set(beamR, Math.max(1e-4, h), beamR); p.beam.position.y = h / 2;
+      p.head.position.y = h; p.halo.position.y = h;
+      const hs = (p.all ? (p.hotel ? 20 : 15) : (isSel ? 40 : 31)) / (0.93 * H) * pop;
+      p.head.scale.set(hs, hs, 1);
+      p.halo.scale.set(hs * 2.6, hs * 2.6, 1); p.halo.material.opacity = isSel ? 0.55 + 0.25 * Math.sin(now * 3) : 0;
+      const cyc = ((now * 0.55 + p.phase) % 1);
+      const rr = camDist * (p.all ? 0.008 : 0.014) * (0.4 + cyc * 1.4) * grow;
+      p.ring.scale.set(rr, rr, rr); p.ring.material.opacity = (1 - cyc) * (isSel ? 0.9 : 0.45) * grow;
+      const sc = toScreen(p.head.position);
+      p.sx = sc.x; p.sy = sc.y; p.vis = sc.ok && u > 0.3;
+      if (p.vis) hits.push({ x: sc.x, y: sc.y, r: isMobile() ? 28 : 20, ids: p.ids });
+      p.isSel = isSel;
+    });
+
+    // label layout: selected first, then near-to-far
+    const boxes = [];
+    const order = pinObjs.slice().sort((a, b) => (b.isSel - a.isSel) || (b.sy - a.sy));
+    const showAllLabels = sel !== "all" || camDist < 40;
+    order.forEach(p => {
+      let show = p.vis && (showAllLabels || p.hotel) && p.lw > 0;
+      let x = p.sx + 16, y = p.sy - p.lh / 2;
+      if (show) {
+        if (x + p.lw > W - 6) x = p.sx - 16 - p.lw;
+        if (x < 6) x = Math.min(W - p.lw - 6, p.sx + 16);
+        const box = { x, y, w: p.lw, h: p.lh };
+        if (!p.isSel && boxes.some(b => overlap(b, box))) show = false;
+        if (show) boxes.push(box);
+      }
+      p.label.classList.toggle("off", !show);
+      p.label.classList.toggle("sel", !!p.isSel);
+      if (show) p.label.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0)`;
+    });
+    legObjs.forEach(l => {
+      if (!l.chip) return;
+      let show = l.show && l.cw > 0;
+      const box = { x: l.cx - l.cw / 2, y: l.cy - 11, w: l.cw, h: 22 };
+      if (show && boxes.some(b => overlap(b, box))) show = false;
+      if (show) boxes.push(box);
+      l.chip.classList.toggle("off", !show);
+      if (show) l.chip.style.transform = `translate3d(${box.x.toFixed(1)}px,${box.y.toFixed(1)}px,0)`;
+    });
+    placeEls.forEach(p => {
+      const s = toScreen(p.v);
+      const show = s.ok && camDist >= p.d0 && camDist <= p.d1 && s.x > -80 && s.x < W + 80 && s.y > 40 && s.y < H;
+      p.el.classList.toggle("off", !show);
+      if (show) p.el.style.transform = `translate3d(${(s.x).toFixed(1)}px,${s.y.toFixed(1)}px,0) translate(-50%,-50%)`;
+    });
+
+    if (traveler) {
+      const start = legObjs.length ? Math.max(...legObjs.map(l => l.delay + l.dur)) : 0;
+      const on = t > start;
+      const u0 = ((now - builtAt - start) * traveler.speed) % 1;
+      traveler.trail.forEach((sp, k) => {
+        const u = ((u0 - k * 0.0045) % 1 + 1) % 1;
+        sp.visible = on;
+        if (!sp.visible) return;
+        sp.position.copy(traveler.path.getPointAt(u));
+        const s = sp.userData.sc; sp.scale.set(s, s, 1);
+      });
+    }
+
+    positionCard();
+    renderer.render(scene, camera);
+  }
+  const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+  let hits = [];
+
+  /* ============================================================ UI: days */
+  const daysEl = document.getElementById("days");
+  function renderDays() {
+    daysEl.innerHTML = `<span class="indicator" id="ind"></span>` +
+      [`<button class="chip" data-d="all" aria-pressed="${sel === "all"}" style="--c:#d8b67a"><span class="dot"></span>All days</button>`]
+      .concat(days.map((d, i) => `<button class="chip" data-d="${i}" aria-pressed="${sel === i}" style="--c:${d.color}"><span class="dot"></span>${esc(d.label)} <small>${esc(d.date.split(" ").slice(1).join(" "))}</small></button>`)).join("");
+    moveIndicator(true);
+  }
+  function moveIndicator(instant) {
+    const ind = document.getElementById("ind");
+    const active = daysEl.querySelector('.chip[aria-pressed="true"]');
+    if (!ind || !active) return;
+    if (instant) ind.style.transition = "none";
+    ind.style.width = `${active.offsetWidth}px`;
+    ind.style.transform = `translateX(${active.offsetLeft}px)`;
+    ind.style.setProperty("--c", active.style.getPropertyValue("--c"));
+    if (instant) requestAnimationFrame(() => { ind.style.transition = ""; });
+  }
+  daysEl.addEventListener("click", e => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    selectDay(b.dataset.d === "all" ? "all" : +b.dataset.d);
+    b.scrollIntoView({ inline: "nearest", block: "nearest", behavior: reduce ? "auto" : "smooth" });
+  });
+  function selectDay(d, peek) {
+    stopTour();
+    sel = d; selStop = null; cancelAdd(); pending = null; hideCard();
+    daysEl.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", String((c.dataset.d === "all" ? "all" : +c.dataset.d) === d)));
+    moveIndicator(false);
+    renderPanel(true);
+    if (peek && isMobile()) setSheet("peek");
+    buildDyn();
+    fitPoints(selectionPts(), 1.7);
+    try { localStorage.setItem(STORE + ":sel", String(d)); } catch (e) {}
+  }
+
+  /* ============================================================ UI: panel */
+  const panel = document.getElementById("panel"), head = document.getElementById("panelHead");
+  const body = document.getElementById("panelBody"), foot = document.getElementById("panelFoot");
+  const ICON = {
+    up: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10l4-4 4 4"/></svg>',
+    down: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6l4 4 4-4"/></svg>',
+    del: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4l8 8M12 4l-8 8"/></svg>',
+    plus: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3v10M3 8h10"/></svg>',
+    reset: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8a5 5 0 1 0 1.5-3.5M3 3v2.5h2.5"/></svg>',
+    play: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M4.5 2.8v10.4L13 8z"/></svg>',
+    stop: '<svg viewBox="0 0 16 16" fill="currentColor"><rect x="4" y="4" width="8" height="8" rx="1.5"/></svg>'
+  };
+
+  function countUp(el, to, fmt) {
+    if (reduce) { el.textContent = fmt(to); return; }
+    const t0 = performance.now(), dur = 900;
+    const tick = () => { const u = clamp01((performance.now() - t0) / dur); el.textContent = fmt(to * easeOut(u)); if (u < 1) requestAnimationFrame(tick); };
+    tick();
+  }
+
+  function renderPanel(animate) {
+    body.classList.toggle("enter", !!animate);
+    if (sel === "all") {
+      const total = days.reduce((a, d) => a + dayKm(d), 0);
+      const stops = days.reduce((a, d) => a + d.stops.length, 0);
+      head.style.setProperty("--c", "#d8b67a");
+      head.innerHTML = `
+        <div class="row"><span class="daytag">Whole trip</span><span class="date">26 Oct – 1 Nov</span></div>
+        <h2>Shanghai and Hangzhou, one week</h2>
+        <div class="stats-row"><div class="stats">
+          <div class="stat"><b data-n="${days.length}">${days.length}</b><span>Days</span></div>
+          <div class="stat"><b data-n="${stops}">${stops}</b><span>Stops</span></div>
+          <div class="stat"><b data-n="${Math.round(total)}" data-km>${Math.round(total)}</b><span>km direct*</span></div>
+        </div></div>`;
+      body.innerHTML = days.map((d, i) => `
+        <button class="dayrow" data-d="${i}" style="--c:${d.color};--i:${i}">
+          <span class="badge">${esc(d.short)}</span>
+          <span class="t"><b>${esc(d.title)}</b><span>${esc(d.date)} · ${d.stops.length} stops</span></span>
+          <span class="km">${fmtKm(dayKm(d))}</span>
+        </button>`).join("");
+      foot.innerHTML = `
+        <div class="btns"><button class="btn${resetArmed ? " armed" : ""}" id="resetBtn">${ICON.reset}<span>${resetArmed ? "Tap again to reset all" : "Reset to original plan"}</span></button></div>
+        <p class="fine">*Straight-line distances; roads add roughly a third. Pins are approximate — tap a stop and use "Find in Amap" for the exact spot. Edits are saved on this device.</p>`;
+    } else {
+      const day = days[sel], L = legs(day), legTo = new Map(L.map(l => [l.to, l]));
+      head.style.setProperty("--c", day.color);
+      head.innerHTML = `
+        <div class="row"><span class="daytag">${esc(day.label)}</span><span class="date">${esc(day.date)}</span></div>
+        <h2>${esc(day.title)}</h2>
+        <div class="stats-row">
+          <div class="stats">
+            <div class="stat"><b data-n="${day.stops.length}">${day.stops.length}</b><span>Stops</span></div>
+            <div class="stat"><b data-n="${L.length}">${L.length}</b><span>Legs</span></div>
+            <div class="stat"><b data-n="${dayKm(day)}" data-km>${fmtKm(dayKm(day))}</b><span>Direct*</span></div>
+          </div>
+          ${L.length ? `<button class="play" id="playBtn">${tour ? ICON.stop + "Stop" : ICON.play + "Play day"}</button>` : ""}
+        </div>`;
+      if (pending) { renderForm(day); return; }
+      let n = 0, k = 0;
+      body.innerHTML = `<ol class="stops">${day.stops.map((s, i) => {
+        const leg = legTo.get(i), has = mapped(s); if (has) n++;
+        const active = selStop && selStop.d === sel && selStop.i === i;
+        return `${leg ? `<div class="leg" style="--i:${k++}"><b>${fmtKm(leg.d)}</b> · ${MODE[leg.mode]}</div>` : ""}
+          <li class="stop${active ? " active" : ""}" data-i="${i}" style="--c:${day.color};--i:${k++}" tabindex="0">
+            <span class="num ${s.k === "hotel" ? "hotel" : ""} ${has ? "" : "none"}">${has ? n : "–"}</span>
+            <span class="stop-main">
+              <span class="stop-top"><span class="time">${esc(s.t || "—")}</span><span class="kind">${esc(KIND[s.k] || "Stop")}</span></span>
+              <span class="name">${esc(s.n)}</span>
+              ${s.zh ? `<span class="zh">${esc(s.zh)}</span>` : ""}
+              ${s.note ? `<span class="note">${esc(s.note)}</span>` : ""}
+              ${has ? `<a class="row-link" href="${amapUrl(s)}" target="_blank" rel="noopener">Find in Amap ↗</a>` : `<span class="note warn">Not on the map yet</span>`}
+            </span>
+            <span class="acts">
+              <button class="icon-btn" data-act="up" aria-label="Move ${esc(s.n)} earlier" ${i === 0 ? "disabled" : ""}>${ICON.up}</button>
+              <button class="icon-btn" data-act="down" aria-label="Move ${esc(s.n)} later" ${i === day.stops.length - 1 ? "disabled" : ""}>${ICON.down}</button>
+              <button class="icon-btn del" data-act="del" aria-label="Remove ${esc(s.n)}">${ICON.del}</button>
+            </span>
+          </li>`;
+      }).join("")}</ol>`;
+      foot.innerHTML = `
+        <div class="btns">
+          <button class="btn primary" id="addBtn">${ICON.plus}<span>Add stop</span></button>
+          <button class="btn${resetArmed ? " armed" : ""}" id="resetBtn">${ICON.reset}<span>${resetArmed ? "Tap again" : "Reset day"}</span></button>
+        </div>
+        <p class="fine">*Straight-line distance between stops; driving is longer. Dotted = walk, solid = drive, dashed = boat.</p>`;
+    }
+    if (animate) head.querySelectorAll("b[data-n]").forEach(b => {
+      const v = +b.dataset.n; countUp(b, v, b.hasAttribute("data-km") && sel !== "all" ? fmtKm : x => String(Math.round(x)));
+    });
+    if (isMobile()) setSheet(sheet.state);
+  }
+
+  function renderForm(day) {
+    const opts = [`<option value="${day.stops.length}">At the end</option>`].concat(day.stops.map((s, i) => `<option value="${i + 1}">After ${esc(s.t ? s.t + " · " : "")}${esc(shortName(s.n))}</option>`));
+    body.innerHTML = `
+      <form class="form" id="addForm" autocomplete="off">
+        <h3>New stop</h3>
+        <div class="field"><label for="fName">Name</label><input id="fName" required placeholder="e.g. Xintiandi coffee"></div>
+        <div class="field"><label for="fZh">Chinese name (for drivers)</label><input id="fZh" placeholder="e.g. 新天地"></div>
+        <div class="two">
+          <div class="field"><label for="fTime">Time</label><input id="fTime" placeholder="15:00"></div>
+          <div class="field"><label for="fKind">Type</label><select id="fKind"><option value="sight">See</option><option value="food">Eat</option><option value="show">Show</option><option value="hotel">Stay</option><option value="transit">Transit</option></select></div>
+        </div>
+        <div class="field"><label for="fPos">Position</label><select id="fPos">${opts.join("")}</select></div>
+        <div class="field"><label for="fNote">Note</label><textarea id="fNote" placeholder="Optional"></textarea></div>
+        <div class="field"><span class="coords">${pending.lat.toFixed(4)}° N · ${pending.lon.toFixed(4)}° E</span></div>
+      </form>`;
+    foot.innerHTML = `<div class="btns"><button class="btn primary" type="submit" form="addForm">Save stop</button><button class="btn" id="cancelNew">Cancel</button></div>`;
+    document.getElementById("addForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const name = document.getElementById("fName").value.trim();
+      if (!name) { document.getElementById("fName").focus(); return; }
+      const pos = +document.getElementById("fPos").value;
+      const stop = { t: document.getElementById("fTime").value.trim(), n: name, zh: document.getElementById("fZh").value.trim(), city: "", k: document.getElementById("fKind").value, note: document.getElementById("fNote").value.trim(), lat: +pending.lat.toFixed(5), lon: +pending.lon.toFixed(5) };
+      days[sel].stops.splice(pos, 0, stop);
+      save(); pending = null; removeGhost(); selStop = { d: sel, i: pos };
+      renderPanel(); buildDyn(); showCard(true); showToast(`Added ${stop.n}`);
+    });
+    document.getElementById("cancelNew").addEventListener("click", () => { pending = null; removeGhost(); renderPanel(); });
+    setSheet("full");
+    setTimeout(() => { const f = document.getElementById("fName"); if (f) f.focus({ preventScroll: true }); }, 60);
+  }
+
+  body.addEventListener("click", e => {
+    const dr = e.target.closest(".dayrow"); if (dr) { selectDay(+dr.dataset.d, true); return; }
+    if (e.target.closest("a")) return;
+    const li = e.target.closest(".stop"); if (!li) return;
+    const i = +li.dataset.i, act = e.target.closest("[data-act]");
+    if (act) {
+      stopTour();
+      const stops = days[sel].stops;
+      if (act.dataset.act === "del") {
+        lastRemoved = { d: sel, i, stop: stops[i] }; stops.splice(i, 1); save();
+        if (selStop && selStop.d === sel) { selStop = null; hideCard(); }
+        renderPanel(); buildDyn(); showToast(`Removed ${lastRemoved.stop.n}`, true);
+      } else {
+        const j = act.dataset.act === "up" ? i - 1 : i + 1;
+        if (j < 0 || j >= stops.length) return;
+        [stops[i], stops[j]] = [stops[j], stops[i]]; save();
+        if (selStop && selStop.d === sel) selStop.i = j;
+        renderPanel(); buildDyn();
+      }
+      return;
+    }
+    stopTour(); focusStop(sel, i, 1.5, "list");
+  });
+  body.addEventListener("keydown", e => { if (e.key === "Enter") { const li = e.target.closest(".stop"); if (li && e.target === li) focusStop(sel, +li.dataset.i); } });
+  head.addEventListener("click", e => { if (e.target.closest("#playBtn")) { tour ? stopTour() : playTour(); } });
+  foot.addEventListener("click", e => {
+    if (e.target.closest("#addBtn")) { startAdd(); return; }
+    if (e.target.closest("#resetBtn")) {
+      if (!resetArmed) { resetArmed = true; renderPanel(); clearTimeout(resetTimer); resetTimer = setTimeout(() => { resetArmed = false; renderPanel(); }, 3000); return; }
+      resetArmed = false; clearTimeout(resetTimer);
+      if (sel === "all") days = clone(PLAN); else days[sel] = clone(PLAN[sel]);
+      save(); selStop = null; hideCard(); renderDays(); renderPanel(true); buildDyn();
+      showToast(sel === "all" ? "Trip reset to the original plan" : `${days[sel].label} reset`);
+    }
+  });
+
+  function stopView(s) {
+    const local = s.city === "上海" || s.city === "杭州" || s.city === "苏州";
+    return { t: new THREE.Vector3(wx(s.lon), 0, wz(s.lat)), d: (local ? 3.2 : 9) * (isMobile() ? 1.35 : 1) };
+  }
+  function focusStop(d, i, dur = 1.5, from = "map") {
+    const s = days[d].stops[i];
+    selStop = { d, i }; renderPanel();
+    if (isMobile()) setSheet(from === "list" ? "half" : "peek");
+    if (mapped(s)) {
+      const v = stopView(s), cur = sph();
+      flyTo({ t: v.t, d: Math.min(v.d, Math.max(cur.d, v.d * 0.6)), polar: tiltOn ? 0.95 : 0.001, az: cur.az + (tour ? 0.35 : 0) }, dur);
+      showCard(true);
+    } else hideCard();
+    const el = body.querySelector(`.stop[data-i="${i}"]`);
+    if (el) el.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+  }
+
+  /* guided tour */
+  const STEP = 3.2;
+  function playTour() {
+    if (sel === "all") return;
+    const idx = days[sel].stops.map((s, i) => mapped(s) ? i : -1).filter(i => i >= 0);
+    if (!idx.length) return;
+    tour = { idx, k: 0, timer: 0 };
+    spinning = false; document.getElementById("spin").setAttribute("aria-pressed", "false");
+    renderPanel(); tourStep();
+  }
+  function tourStep() {
+    if (!tour) return;
+    if (tour.k >= tour.idx.length) { stopTour(); fitPoints(selectionPts(), 1.8); return; }
+    tour.cur = tour.k;
+    focusStop(sel, tour.idx[tour.k], 1.6, "tour");
+    tour.k++;
+    tour.timer = setTimeout(tourStep, STEP * 1000);
+  }
+  function stopTour() {
+    if (!tour) return;
+    clearTimeout(tour.timer); tour = null;
+    if (sel !== "all") renderPanel();
+    if (selStop) showCard(false);
+  }
+
+  /* mobile bottom sheet: peek / half / full, draggable */
+  const handle = document.getElementById("sheetHandle");
+  function sheetHeights() {
+    const peek = Math.round(handle.offsetHeight + head.offsetHeight + 4);
+    const brandB = document.querySelector(".brand").getBoundingClientRect().bottom;
+    return { peek, half: Math.max(peek + 140, Math.round(H * 0.5)), full: Math.round(H - Math.max(64, brandB + 8)) };
+  }
+  function setSheet(state) {
+    if (!isMobile()) { panel.style.height = ""; sheet.h = 0; document.documentElement.style.removeProperty("--sheet-h"); syncCard(); return; }
+    sheet.state = state;
+    sheet.h = sheetHeights()[state];
+    panel.style.height = `${sheet.h}px`;
+    document.documentElement.style.setProperty("--sheet-h", `${sheet.h}px`);
+    syncCard();
+  }
+  let sdrag = null;
+  function sheetDown(e) {
+    if (!isMobile() || e.target.closest("button:not(.sheet-handle), a, input, select, textarea")) return;
+    const now = performance.now();
+    sdrag = { y: e.clientY, h: panel.getBoundingClientRect().height, id: e.pointerId, moved: false, lastY: e.clientY, lastT: now, v: 0, el: e.currentTarget };
+    panel.classList.add("dragging");
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+  }
+  function sheetMove(e) {
+    if (!sdrag || e.pointerId !== sdrag.id) return;
+    const dy = e.clientY - sdrag.y;
+    if (Math.abs(dy) > 5) sdrag.moved = true;
+    if (!sdrag.moved) return;
+    const hs = sheetHeights();
+    let h = sdrag.h - dy;
+    if (h > hs.full) h = hs.full + (h - hs.full) * 0.25;
+    if (h < hs.peek) h = hs.peek - (hs.peek - h) * 0.25;
+    panel.style.height = `${h}px`;
+    const now = performance.now();
+    sdrag.v = (e.clientY - sdrag.lastY) / Math.max(1, now - sdrag.lastT); sdrag.lastY = e.clientY; sdrag.lastT = now;
+  }
+  function sheetUp(e) {
+    if (!sdrag || e.pointerId !== sdrag.id) return;
+    panel.classList.remove("dragging");
+    const d = sdrag; sdrag = null;
+    if (!d.moved) {
+      if (sheet.state === "peek") setSheet("half");
+      else if (d.el === handle) setSheet("peek");
+      return;
+    }
+    const hs = sheetHeights(), h = panel.getBoundingClientRect().height, order = ["peek", "half", "full"];
+    let target;
+    if (d.v < -0.45) target = order.find(st => hs[st] > h + 10) || "full";
+    else if (d.v > 0.45) target = order.slice().reverse().find(st => hs[st] < h - 10) || "peek";
+    else target = order.reduce((a, st) => Math.abs(hs[st] - h) < Math.abs(hs[a] - h) ? st : a, "peek");
+    setSheet(target);
+  }
+  [handle, head].forEach(el => {
+    el.addEventListener("pointerdown", sheetDown);
+    el.addEventListener("pointermove", sheetMove);
+    el.addEventListener("pointerup", sheetUp);
+    el.addEventListener("pointercancel", sheetUp);
+  });
+  function syncCard() { card.classList.toggle("m-hide", isMobile() && sheet.state !== "peek"); }
+
+  /* add stop */
+  const addbar = document.getElementById("addbar");
+  let ghost = null;
+  function startAdd() { stopTour(); addMode = true; addbar.hidden = false; canvas.classList.add("adding"); hideCard(); if (isMobile()) setSheet("peek"); }
+  function cancelAdd() { addMode = false; addbar.hidden = true; canvas.classList.remove("adding"); }
+  function removeGhost() { if (ghost) { scene.remove(ghost); ghost = null; } }
+  document.getElementById("addCancel").addEventListener("click", cancelAdd);
+
+  /* card */
+  function amapUrl(s) {
+    const q = encodeURIComponent(s.zh ? s.zh.replace(/[（(].*[)）]/, "").split(" · ")[0] : s.n);
+    return `https://uri.amap.com/search?keyword=${q}${s.city ? `&city=${encodeURIComponent(s.city)}` : ""}`;
+  }
+  const mappedIdx = d => days[d].stops.map((x, i) => mapped(x) ? i : -1).filter(i => i >= 0);
+  card.addEventListener("click", e => {
+    const b = e.target.closest("[data-nav]"); if (!b || !selStop) return;
+    stopTour();
+    const idx = mappedIdx(selStop.d), j = idx[idx.indexOf(selStop.i) + +b.dataset.nav];
+    if (j != null) focusStop(selStop.d, j, 1.2, "map");
+  });
+  function showCard(anim) {
+    if (!selStop) return hideCard();
+    const day = days[selStop.d], s = day.stops[selStop.i];
+    if (!s) return hideCard();
+    const L = legs(day), inL = L.find(l => l.to === selStop.i), outL = L.find(l => l.from === selStop.i);
+    const nm = i => esc(shortName(day.stops[i].n));
+    const idx = mappedIdx(selStop.d), pos = idx.indexOf(selStop.i);
+    const bar = tour ? `<div class="tourbar" style="--dur:${STEP}s">${tour.idx.map((ix, k) => `<i class="${k < tour.cur ? "done" : k === tour.cur ? "now" : ""}"></i>`).join("")}</div>` : "";
+    card.style.setProperty("--c", day.color);
+    card.innerHTML = `
+      <button class="icon-btn x" id="cardClose" aria-label="Close">${ICON.del}</button>
+      <div class="daytag">${esc(day.label)} · ${esc(day.date)}</div>
+      <h3>${esc(s.n)}</h3>
+      ${s.zh ? `<div class="zh">${esc(s.zh)}</div>` : ""}
+      <div class="meta"><span>${esc(s.t || "—")}</span><span>${esc(KIND[s.k] || "Stop")}</span>${mapped(s) ? `<span>${s.lat.toFixed(3)}°N ${s.lon.toFixed(3)}°E</span>` : ""}</div>
+      ${s.note ? `<div class="note">${esc(s.note)}</div>` : ""}
+      ${inL || outL ? `<div class="legs">${inL ? `<span>From ${nm(inL.from)} · <b>${fmtKm(inL.d)}</b> ${MODE[inL.mode]}</span>` : ""}${outL ? `<span>Next ${nm(outL.to)} · <b>${fmtKm(outL.d)}</b> ${MODE[outL.mode]}</span>` : ""}</div>` : ""}
+      <div class="card-nav">
+        <button data-nav="-1" aria-label="Previous stop" ${pos <= 0 ? "disabled" : ""}>‹</button>
+        <a href="${amapUrl(s)}" target="_blank" rel="noopener">Find in Amap ↗</a>
+        <button data-nav="1" aria-label="Next stop" ${pos < 0 || pos >= idx.length - 1 ? "disabled" : ""}>›</button>
+      </div>${bar}`;
+    card.hidden = false;
+    syncCard();
+    if (anim) { card.classList.remove("pop"); void card.offsetWidth; card.classList.add("pop"); }
+    document.getElementById("cardClose").addEventListener("click", () => { stopTour(); selStop = null; hideCard(); renderPanel(); });
+  }
+  function hideCard() { card.hidden = true; }
+  let cardPos = null;
+  function positionCard() {
+    if (card.hidden || !selStop) return;
+    const s = days[selStop.d] && days[selStop.d].stops[selStop.i];
+    if (!mapped(s)) return;
+    const cw = card.offsetWidth, ch = card.offsetHeight;
+    let x, y;
+    if (isMobile()) {
+      const top = panel.getBoundingClientRect().top;
+      x = 12; y = top - ch - 12;
+    } else {
+      const p = pinObjs.find(p => p.isSel);
+      if (!p) return;
+      const R = viewFull.R || usableRect();
+      x = p.sx - cw / 2; y = p.sy - 34 - ch;
+      if (y < R.t - 8) y = p.sy + 30;
+      x = Math.max(16, Math.min(x, R.r + 50 - cw)); y = Math.max(16, Math.min(y, H - ch - 16));
+    }
+    if (!cardPos) cardPos = { x, y };
+    cardPos.x += (x - cardPos.x) * 0.25; cardPos.y += (y - cardPos.y) * 0.25;
+    card.style.transform = `translate3d(${cardPos.x.toFixed(1)}px,${cardPos.y.toFixed(1)}px,0)`;
+  }
+
+  /* toast */
+  const toast = document.getElementById("toast");
+  function showToast(msg, undo) {
+    toast.hidden = true; void toast.offsetWidth;
+    toast.innerHTML = `<span>${esc(msg)}</span>${undo ? '<button id="undoBtn">Undo</button>' : ""}`;
+    toast.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { toast.hidden = true; }, undo ? 5000 : 2200);
+    if (undo) document.getElementById("undoBtn").addEventListener("click", () => {
+      if (!lastRemoved) return;
+      days[lastRemoved.d].stops.splice(lastRemoved.i, 0, lastRemoved.stop);
+      save(); lastRemoved = null; toast.hidden = true; renderPanel(); buildDyn();
+    });
+  }
+
+  /* ============================================================ input */
+  let down = null;
+  canvas.addEventListener("pointerdown", e => { down = { x: e.clientX, y: e.clientY }; });
+  canvas.addEventListener("pointerup", e => {
+    if (!down) return;
+    const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y); down = null;
+    if (moved > 5 || e.button === 2) return;
+    const r = canvas.getBoundingClientRect(); tap(e.clientX - r.left, e.clientY - r.top);
+  });
+  canvas.addEventListener("contextmenu", e => e.preventDefault());
+  controls.addEventListener("start", () => { flight = null; if (tour) stopTour(); });
+
+  const ray = new THREE.Raycaster(), plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+  function tap(x, y) {
+    if (addMode) {
+      ray.setFromCamera(new THREE.Vector2(x / W * 2 - 1, -(y / H) * 2 + 1), camera);
+      const p = new THREE.Vector3(); if (!ray.ray.intersectPlane(plane, p)) return;
+      pending = fromW(p.x, p.z); cancelAdd();
+      removeGhost();
+      ghost = new THREE.Sprite(new THREE.SpriteMaterial({ map: pinTexture("+", "#d8b67a", false, false), sizeAttenuation: false, depthTest: false, transparent: true }));
+      ghost.position.set(p.x, camDist * 0.05, p.z); ghost.scale.set(34 / (0.93 * H), 34 / (0.93 * H), 1); ghost.renderOrder = 36; scene.add(ghost);
+      renderPanel();
+      return;
+    }
+    let best = null, bd = Infinity;
+    hits.forEach(h => { const d = Math.hypot(h.x - x, h.y - y); if (d < h.r && d < bd) { bd = d; best = h; } });
+    if (best) {
+      stopTour();
+      const id = best.ids[0];
+      if (sel === "all") { selectDay(id.d, true); setTimeout(() => focusStop(id.d, id.i, 1.5, "map"), 350); return; }
+      selStop = { d: id.d, i: id.i }; renderPanel(); if (isMobile()) setSheet("peek"); showCard(true);
+      const el = body.querySelector(`.stop[data-i="${id.i}"]`); if (el) el.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+      return;
+    }
+    if (selStop) { selStop = null; hideCard(); renderPanel(); }
+  }
+
+  const zoomBy = k => { const s = sph(); flyTo({ d: Math.max(controls.minDistance, Math.min(controls.maxDistance, s.d * k)) }, 0.55); };
+  document.getElementById("zin").addEventListener("click", () => zoomBy(1 / 1.7));
+  document.getElementById("zout").addEventListener("click", () => zoomBy(1.7));
+  const tiltBtn = document.getElementById("tilt");
+  tiltBtn.addEventListener("click", () => {
+    tiltOn = !tiltOn; tiltBtn.setAttribute("aria-pressed", String(tiltOn)); tiltBtn.textContent = tiltOn ? "3D" : "2D";
+    flyTo({ polar: tiltOn ? 0.92 : 0.001, az: tiltOn ? undefined : 0 }, 1.1);
+  });
+  const spinBtn = document.getElementById("spin");
+  spinBtn.addEventListener("click", () => { spinning = !spinning; spinBtn.setAttribute("aria-pressed", String(spinning)); if (spinning && !tiltOn) tiltBtn.click(); });
+  document.getElementById("fit").addEventListener("click", () => { stopTour(); fitPoints(selectionPts(), 1.4); });
+  window.addEventListener("keydown", e => {
+    if (e.target.closest && e.target.closest("input, textarea, select")) return;
+    if (e.key === "+" || e.key === "=") zoomBy(1 / 1.4);
+    else if (e.key === "-") zoomBy(1.4);
+    else if (e.key === "Escape") { if (addMode) cancelAdd(); else if (tour) stopTour(); else if (selStop) { selStop = null; hideCard(); renderPanel(); } }
+  });
+  window.addEventListener("resize", () => { setSheet(sheet.state); resize(); moveIndicator(true); });
+
+  /* ============================================================ boot */
+  resize();
+  try { const s = localStorage.getItem(STORE + ":sel"); if (s !== null) sel = s === "all" ? "all" : Math.min(days.length - 1, Math.max(0, +s || 0)); } catch (e) {}
+  renderDays(); renderPanel(true);
+  setSheet("peek");
+  resize();
+  place(new THREE.Vector3(wx(120.9), 0, wz(30.9)), 1300, 0.25, -0.9);
+  buildDyn();
+  setTimeout(() => fitPoints(selectionPts(), reduce ? 0 : 3.2, { az: 0 }), 150);
+  setTimeout(() => { document.getElementById("app").classList.remove("boot"); resize(); }, 2200);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { texCache.clear(); buildDyn(); moveIndicator(true); setSheet(sheet.state); resize(); });
+  renderer.setAnimationLoop(frame);
+})();
+</script>
+
+</body>
+</html>
