@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Interactive 3D route map for a Shanghai and Hangzhou trip, 26 Oct – 1 Nov 2026.">
+<meta name="description" content="Interactive 3D route map for a Shanghai, Suzhou and Hangzhou trip, 25–31 Oct 2026.">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
@@ -160,6 +160,7 @@
   .ctl svg { width: 16px; height: 16px; }
   .ctl-sep { height: 1px; background: var(--line); margin: 0 6px; }
 
+  .top-actions { position: absolute; right: calc(var(--panel-w) + 32px); top: calc(16px + env(safe-area-inset-top, 0px)); display: flex; gap: 2px; padding: 4px; border-radius: 12px; z-index: 3; }
   .hint { position: absolute; left: 16px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); font-size: 11px; color: var(--faint); font-family: var(--mono); pointer-events: none; }
 
   .addbar { position: absolute; left: 50%; top: calc(20px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; z-index: 6; white-space: nowrap; animation: drop .5s var(--spring) both; }
@@ -204,6 +205,7 @@
   .boot .days { animation: slideIn .9s var(--ease) .38s both; }
   .boot .panel { animation: panelIn 1s var(--ease) .5s both; }
   .boot .controls { animation: slideIn .8s var(--ease) .9s both; }
+  .boot .top-actions { animation: slideIn .8s var(--ease) .7s both; }
   @keyframes slideIn { from { opacity: 0; transform: translateY(-14px); filter: blur(6px); } }
   @keyframes panelIn { from { opacity: 0; transform: translateX(40px); filter: blur(8px); } }
 
@@ -216,7 +218,7 @@
     .days { align-self: stretch; scroll-snap-type: x proximity; padding: 4px; }
     .indicator { top: 4px; height: calc(100% - 8px); }
     .chip { padding: 9px 13px; scroll-snap-align: start; }
-    .panel { left: 0; right: 0; bottom: 0; top: auto; width: auto; height: 150px; border-radius: 22px 22px 0 0; border-bottom: 0; padding-bottom: env(safe-area-inset-bottom, 0px); transition: height .5s var(--spring); box-shadow: 0 -18px 50px rgba(0,0,0,.5); }
+    .panel { left: 0; right: 0; bottom: 0; top: auto; width: auto; height: 150px; border-radius: 22px 22px 0 0; border-bottom: 0; padding-bottom: env(safe-area-inset-bottom, 0px); transition: height .5s var(--spring); box-shadow: 0 -18px 50px rgba(0,0,0,.5); z-index: 4; }
     .panel.dragging { transition: none; }
     .sheet-handle { display: grid; place-items: center; border: 0; background: transparent; padding: 10px 0 4px; width: 100%; touch-action: none; cursor: grab; }
     .sheet-handle i { width: 40px; height: 4px; border-radius: 4px; background: var(--line-strong); }
@@ -229,6 +231,7 @@
     .controls { right: 12px; bottom: auto; top: var(--ctl-top, 120px); padding: 4px; gap: 2px; }
     .ctl { width: 40px; height: 40px; }
     .ctl.zoom, .ctl-sep { display: none; }
+    .top-actions { right: 12px; top: calc(10px + env(safe-area-inset-top, 0px)); padding: 3px; border-radius: 10px; }
     .hint { display: none; }
     .plabel { font-size: 11px; padding: 3px 7px 3px 6px; }
     .plabel .t { font-size: 10px; }
@@ -251,6 +254,114 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0ms !important; transition-duration: .01ms !important; }
   }
+
+  /* ---- light theme ---- */
+  [data-theme="light"] { color-scheme: light; --ink: #f5f3ef; --glass: rgba(255,255,255,.82); --glass-strong: rgba(255,255,255,.94); --line: rgba(30,30,30,.09); --line-strong: rgba(30,30,30,.16); --text: #1a1c20; --muted: #5c6170; --faint: #8c919e; --gold: #b8892e; --danger: #c0392b; }
+  [data-theme="light"] body { background: var(--ink); }
+  [data-theme="light"] .plabel { background: rgba(255,255,255,.92); border-color: rgba(0,0,0,.1); color: var(--text); }
+  [data-theme="light"] .plabel.sel { background: rgba(255,255,255,.97); }
+  [data-theme="light"] .dchip { background: rgba(255,255,255,.92); border-color: color-mix(in srgb, var(--c) 55%, transparent); color: var(--text); }
+  [data-theme="light"] .chip[aria-pressed="true"] { color: #1a1c20; }
+  [data-theme="light"] .chip[aria-pressed="true"] small { color: rgba(26,28,32,.6); }
+  [data-theme="light"] .chip[aria-pressed="true"] .dot { background: #1a1c20; box-shadow: none; }
+  [data-theme="light"] .num { color: #1a1c20; }
+  [data-theme="light"] .dayrow .badge { color: #1a1c20; }
+  [data-theme="light"] .num.hotel { background: #fff; }
+  [data-theme="light"] .stop:hover { background: rgba(0,0,0,.04); }
+  [data-theme="light"] .stop.active { background: rgba(0,0,0,.06); box-shadow: inset 0 0 0 1px var(--line-strong); }
+  [data-theme="light"] .dayrow:hover { background: rgba(0,0,0,.04); }
+  [data-theme="light"] .icon-btn:hover { background: rgba(0,0,0,.06); }
+  [data-theme="light"] .btn { border-color: var(--line-strong); background: rgba(0,0,0,.03); }
+  [data-theme="light"] .btn:hover { background: rgba(0,0,0,.06); }
+  [data-theme="light"] .btn.primary { background: var(--gold); color: #1a1c20; border-color: var(--gold); }
+  [data-theme="light"] .field input, [data-theme="light"] .field select, [data-theme="light"] .field textarea { background: rgba(0,0,0,.04); border-color: var(--line-strong); }
+  [data-theme="light"] .card { background: var(--glass-strong); }
+  [data-theme="light"] .toast { background: var(--glass-strong); }
+  [data-theme="light"] .toast button { color: #1a1c20; }
+  [data-theme="light"] .play { color: var(--text); border-color: color-mix(in srgb, var(--c, var(--gold)) 40%, transparent); }
+  [data-theme="light"] .ctl:hover { background: rgba(0,0,0,.06); }
+  [data-theme="light"] .ctl[aria-pressed="true"] { color: var(--gold); }
+  [data-theme="light"] .card-nav button { background: rgba(0,0,0,.04); }
+  [data-theme="light"] .card-nav button:hover { background: rgba(0,0,0,.08); }
+  [data-theme="light"] .glass { box-shadow: 0 18px 50px rgba(0,0,0,.08); }
+  [data-theme="light"] .vignette { background: radial-gradient(120% 90% at 42% 55%, transparent 55%, rgba(245,243,239,.55) 100%); }
+
+  /* ---- list view ---- */
+  .listview { position: fixed; inset: 0; z-index: 10; background: var(--ink); overflow-y: auto; overflow-x: hidden; display: none; -webkit-overflow-scrolling: touch; }
+  .listview.open { display: block; }
+  .lv-topbar { position: sticky; top: 0; z-index: 2; background: var(--ink); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
+  .lv-topbar-inner { max-width: 640px; margin: 0 auto; padding: 16px 20px 0; display: flex; align-items: center; justify-content: space-between; }
+  .lv-topbar-inner h2 { font-family: var(--display); font-weight: 600; font-size: 22px; margin: 0; letter-spacing: -.02em; }
+  .lv-close { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--line-strong); background: transparent; color: var(--text); display: grid; place-items: center; cursor: pointer; flex: none; }
+  .lv-daypicker { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; padding: 12px 20px; max-width: 640px; margin: 0 auto; }
+  .lv-daypicker::-webkit-scrollbar { display: none; }
+  .lv-dpick { flex: none; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line-strong); background: transparent; color: var(--muted); padding: 7px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: background .2s, color .2s, border-color .2s; }
+  .lv-dpick:hover { background: rgba(128,128,128,.08); }
+  .lv-dpick.active { background: var(--c); color: #1a1c20; border-color: var(--c); }
+  .lv-dpick small { font-weight: 500; color: inherit; opacity: .7; font-size: 11px; margin-left: 2px; }
+  .lv-dp-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+  .lv-dpick.active .lv-dp-dot { background: #1a1c20 !important; }
+  .listview-inner { max-width: 640px; margin: 0 auto; padding: 20px 20px calc(24px + env(safe-area-inset-bottom, 0px)); }
+  .lv-day { margin-bottom: 8px; }
+  .lv-day-head { display: flex; align-items: center; gap: 10px; padding: 14px 0 8px; color: var(--text); }
+  .lv-day-head .lv-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .lv-day-head .lv-dtitle { flex: 1; min-width: 0; }
+  .lv-day-head .lv-dtitle b { font-family: var(--display); font-weight: 600; font-size: 16px; display: block; }
+  .lv-day-head .lv-dtitle span { font-size: 12.5px; color: var(--muted); }
+  .lv-day + .lv-day { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 4px; }
+  .lv-stops { padding: 0 0 8px; }
+  .lv-time { font-family: var(--mono); font-size: 12.5px; color: var(--muted); padding-top: 2px; }
+  .lv-name { font-weight: 600; font-size: 14.5px; line-height: 1.35; }
+  .lv-name .lv-zh { display: block; font-weight: 400; font-family: var(--zh); font-size: 12.5px; color: var(--muted); margin-top: 1px; }
+  .lv-leg { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; padding: 6px 0 6px 20px; font-family: var(--mono); font-size: 11px; color: var(--faint); }
+  .lv-leg::before { content: ""; width: 12px; border-top: 1px dashed var(--line-strong); }
+  .lv-row { border-top: 1px solid var(--line); }
+  .lv-row:first-child { border-top: 0; }
+  .lv-row-head { display: grid; grid-template-columns: 54px 1fr 28px; gap: 4px 12px; padding: 10px 0; align-items: start; -webkit-user-select: none; user-select: none; }
+  .lv-row-head[data-expand] { cursor: pointer; }
+  .lv-row-head[data-expand]:hover { background: rgba(128,128,128,.04); margin: 0 -8px; padding-left: 8px; padding-right: 8px; border-radius: 8px; }
+  .lv-chevron { grid-column: 3; grid-row: 1; width: 28px; height: 28px; display: grid; place-items: center; color: var(--faint); transition: transform .25s var(--ease); margin-top: -2px; }
+  .lv-chevron svg { width: 14px; height: 14px; }
+  .lv-row.expanded .lv-chevron { transform: rotate(90deg); }
+  .lv-detail { display: none; padding: 0 0 10px 66px; }
+  .lv-row.expanded .lv-detail { display: block; }
+  .lv-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--line); margin-bottom: 10px; }
+  .lv-tab { border: 0; background: transparent; color: var(--faint); font-size: 11.5px; font-weight: 600; padding: 6px 12px 8px; cursor: pointer; position: relative; transition: color .2s; white-space: nowrap; }
+  .lv-tab:hover { color: var(--text); }
+  .lv-tab.active { color: var(--text); }
+  .lv-tab.active::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2px; background: var(--gold); border-radius: 1px; }
+  .lv-tab-body { display: none; }
+  .lv-tab-body.active { display: block; }
+  .lv-tab-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; }
+  .lv-tab-list li { position: relative; padding-left: 18px; font-size: 13px; line-height: 1.5; color: var(--muted); }
+  .lv-tab-list.checklist li::before { content: ""; position: absolute; left: 0; top: 7px; width: 8px; height: 8px; border-radius: 3px; border: 1.5px solid var(--line-strong); }
+  .lv-tab-list.bullet li::before { content: ""; position: absolute; left: 2px; top: 9px; width: 5px; height: 5px; border-radius: 50%; background: var(--faint); }
+  .lv-tab-list.ticket li::before { content: "🎫"; position: absolute; left: 0; top: 1px; font-size: 11px; }
+  .lv-empty { font-size: 12.5px; color: var(--faint); font-style: italic; }
+
+  /* summary view items */
+  .sv-item { display: grid; grid-template-columns: 54px 1fr; gap: 2px 12px; padding: 8px 0; align-items: baseline; }
+  .sv-item .lv-time { font-size: 11.5px; }
+  .sv-item .sv-stop { font-weight: 600; font-size: 13.5px; line-height: 1.3; }
+  .sv-item .sv-stop small { font-weight: 400; color: var(--muted); font-size: 12px; margin-left: 4px; }
+  .sv-items { border-top: 1px solid var(--line); padding-top: 4px; }
+  .sv-items .sv-entry { grid-column: 1 / -1; padding: 5px 0 5px 66px; font-size: 13px; line-height: 1.5; color: var(--muted); position: relative; display: flex; align-items: flex-start; gap: 8px; cursor: pointer; -webkit-user-select: none; user-select: none; }
+  .sv-check { flex: none; width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid var(--line-strong); background: transparent; display: grid; place-items: center; margin-top: 2px; transition: background .2s, border-color .2s; }
+  .sv-entry.done .sv-check { background: var(--gold); border-color: var(--gold); }
+  .sv-entry.done .sv-check svg { opacity: 1; }
+  .sv-entry.done .sv-text { text-decoration: line-through; opacity: .5; }
+  .sv-check svg { width: 12px; height: 12px; opacity: 0; transition: opacity .15s; }
+  .sv-text { flex: 1; min-width: 0; }
+  .sv-none { padding: 20px 0; text-align: center; color: var(--faint); font-size: 13px; font-style: italic; }
+  @media (max-width: 760px) {
+    .lv-topbar-inner { padding: 12px 16px 0; }
+    .lv-topbar-inner h2 { font-size: 18px; }
+    .lv-daypicker { padding: 10px 16px; }
+    .listview-inner { padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
+    .lv-row-head { grid-template-columns: 48px 1fr 28px; gap: 2px 10px; }
+    .lv-detail { padding-left: 58px; }
+    .sv-items .sv-entry { padding-left: 58px; }
+  }
 </style>
 
 <div class="app boot" id="app">
@@ -260,9 +371,9 @@
 
   <div class="top">
     <header class="brand glass">
-      <div class="eyebrow">Route atlas · 26 Oct – 1 Nov 2026</div>
-      <h1>Shanghai <i>·</i> Hangzhou</h1>
-      <p>7 days · KUL ⇄ PVG · Juneyao</p>
+      <div class="eyebrow">Route atlas · 25–31 Oct 2026</div>
+      <h1>Shanghai <i>·</i> Suzhou <i>·</i> Hangzhou</h1>
+      <p>7 days · KUL → PVG · Shanghai Airlines / AirAsia X · HGH → KUL</p>
     </header>
     <nav class="days glass" id="days" aria-label="Filter by day"></nav>
   </div>
@@ -283,6 +394,17 @@
     <button class="ctl" id="fit" aria-label="Fit route to screen"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 6V2.5H6M10 2.5h3.5V6M13.5 10v3.5H10M6 13.5H2.5V10"/></svg></button>
   </div>
 
+  <div class="top-actions glass" id="topActions">
+    <button class="ctl" id="listToggle" aria-pressed="false" aria-label="Toggle list view"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4h10M3 8h10M3 12h10"/></svg></button>
+    <button class="ctl" id="prereqToggle" aria-pressed="false" aria-label="Pre-requisites overview"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5v5M8 10.5v0"/><circle cx="8" cy="8" r="6.5"/></svg></button>
+    <button class="ctl" id="ticketToggle" aria-pressed="false" aria-label="Tickets overview"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 5.5h12v6H2z"/><path d="M2 5.5a2 2 0 0 0 0 3M14 5.5a2 2 0 0 1 0 3"/><path d="M5 5.5V4.5a1 1 0 0 1 2 0v1M9 5.5V4.5a1 1 0 0 1 2 0v1"/></svg></button>
+    <button class="ctl" id="themeToggle" aria-label="Toggle light/dark mode"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" id="themeIcon"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v1M8 13.5v1M1.5 8h1M13.5 8h1M3.4 3.4l.7.7M11.9 11.9l.7.7M3.4 12.6l.7-.7M11.9 4.1l.7-.7"/></svg></button>
+  </div>
+
+  <div class="listview" id="listview"></div>
+  <div class="listview" id="prereqview"></div>
+  <div class="listview" id="ticketview"></div>
+
   <div class="hint">Drag to pan · right-drag or two fingers to rotate · scroll to zoom</div>
 
   <div class="addbar glass" id="addbar" hidden><span class="pulse"></span><span>Tap the map where the new stop goes</span><button id="addCancel">Cancel</button></div>
@@ -298,83 +420,86 @@
 
   /* ============================================================ data */
   const PLAN = [
-    { id: "d1", label: "Day 1", short: "1", date: "Mon 26 Oct", title: "Red-eye arrival · Bund by night", color: "#E2C08A", stops: [
-      { t: "06:00", n: "Pudong Airport", zh: "浦东国际机场", city: "上海", k: "transit", note: "Land on the overnight Juneyao flight (left KL 00:25). Allow about an hour for immigration and bags.", lat: 31.1500, lon: 121.8020 },
-      { t: "08:30", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Drop bags. Early check-in if possible.", lat: 31.2468, lon: 121.4935, via: "car" },
-      { t: "09:00", n: "Da Hu Chun · breakfast", zh: "大壶春（四川中路）", city: "上海", k: "food", note: "Michelin Bib Gourmand, opens 06:30. Fresh pork shengjian (鲜肉生煎) and mini wontons.", lat: 31.2372, lon: 121.4868, via: "car" },
-      { t: "09:45", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Rest off the red-eye until about noon.", lat: 31.2468, lon: 121.4935, via: "car" },
-      { t: "12:30", n: "Nanxiang Steamed Bun Restaurant", zh: "南翔馒头店", city: "上海", k: "food", note: "Lunch: Shanghai's classic xiaolongbao house.", lat: 31.2277, lon: 121.4914, via: "car" },
-      { t: "13:30", n: "Yu Garden & City God Temple bazaar", zh: "豫园 · 城隍庙", city: "上海", k: "sight", note: "The inner classical garden is open by day. Graze the snack stalls in the bazaar.", lat: 31.2268, lon: 121.4925 },
-      { t: "15:00", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Check in and freshen up.", lat: 31.2468, lon: 121.4935, via: "car" },
-      { t: "16:00", n: "The Peninsula · afternoon tea", zh: "上海半岛酒店", city: "上海", k: "food", note: "The Lobby, 5 min walk over Waibaidu Bridge. Reserve ahead.", lat: 31.2425, lon: 121.4905 },
+    { id: "d1", label: "Day 1", short: "1", date: "Sun 25 Oct", title: "Afternoon arrival · Bund by night", color: "#E2C08A", stops: [
+      { t: "12:25", n: "Pudong Airport", zh: "浦东国际机场", city: "上海", k: "transit", note: "Land on Shanghai Airlines direct from KUL (07:05). Allow about an hour for immigration and bags.", lat: 31.1500, lon: 121.8020 },
+      { t: "13:30", n: "Car to Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "About 60 min. Pre-book a car or use DiDi.", lat: 31.2468, lon: 121.4935, via: "car" },
+      { t: "14:30", n: "Hyatt on the Bund · check in", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Standard check-in is 15:00; ask for early check-in.", lat: 31.2468, lon: 121.4935 },
+      { t: "16:00", n: "The Peninsula · afternoon tea", zh: "上海半岛酒店", city: "上海", k: "food", note: "The Lobby, 5 min walk over Waibaidu Bridge. Sundays are busy; reserve ahead.", lat: 31.2425, lon: 121.4905 },
       { t: "17:15", n: "The Bund at dusk", zh: "外滩", city: "上海", k: "sight", note: "Walk the promenade as Pudong's skyline lights come on.", lat: 31.2385, lon: 121.4912 },
       { t: "18:00", n: "Nanjing Road East", zh: "南京东路步行街", city: "上海", k: "sight", note: "Best under its neon at night. Walk west toward People's Square.", lat: 31.2376, lon: 121.4790 },
-      { t: "18:45", n: "Yang's Fry-Dumpling · Huanghe Road", zh: "小杨生煎（黄河路店）", city: "上海", k: "food", note: "Street snack / light dinner: shengjianbao, about ¥8 for four. Bite a small hole first; the soup is scalding.", lat: 31.2383, lon: 121.4700 },
+      { t: "18:45", n: "Yang's Fry-Dumpling · Huanghe Road", zh: "小杨生煎（黄河路店）", city: "上海", k: "food", note: "Light dinner: shengjianbao, about ¥8 for four. Bite a small hole first; the soup is scalding.", lat: 31.2383, lon: 121.4700 },
       { t: "19:30", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Taxi back, early night.", lat: 31.2468, lon: 121.4935, via: "car" }
     ]},
-    { id: "d2", label: "Day 2", short: "2", date: "Tue 27 Oct", title: "Museum, old lanes and the skyline", color: "#EA93AA", stops: [
+    { id: "d2", label: "Day 2", short: "2", date: "Mon 26 Oct", title: "French Concession, old lanes and the skyline", color: "#EA93AA", stops: [
       { t: "08:15", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Short taxi to breakfast.", lat: 31.2468, lon: 121.4935 },
-      { t: "08:30", n: "De Xing Guan · breakfast", zh: "德兴馆（广东路）", city: "上海", k: "food", note: "Noodle house since 1878, in the 2026 Michelin Guide. Three-treasure soup noodles (eel, fish, pork hock). Alipay/WeChat Pay only.", lat: 31.2347, lon: 121.4795, via: "car" },
-      { t: "09:30", n: "Shanghai Museum", zh: "上海博物馆（人民广场）", city: "上海", k: "sight", note: "Free, open Tuesdays. Reserve on WeChat (上海博物馆) or show your passport at the visitor centre. About 2 hours.", lat: 31.2285, lon: 121.4755 },
+      { t: "08:30", n: "De Xing Guan · breakfast", zh: "德兴馆（广东路）", city: "上海", k: "food", note: "Noodle house since 1878, in the 2026 Michelin Guide. Three-treasure soup noodles. Alipay/WeChat Pay only.", lat: 31.2347, lon: 121.4795, via: "car" },
+      { t: "09:45", n: "Wukang Mansion", zh: "武康大楼", city: "上海", k: "sight", note: "About 20 min by car. Stroll Wukang Road under the plane trees.", lat: 31.2046, lon: 121.4378, via: "car" },
+      { t: "10:45", n: "Anfu Road", zh: "安福路", city: "上海", k: "sight", note: "Boutiques and a coffee stop.", lat: 31.2139, lon: 121.4442 },
       { t: "12:00", n: "Ren He Guan · lunch", zh: "人和馆（肇嘉浜路）", city: "上海", k: "food", note: "One Michelin star. Crabmeat and roe over rice, fried eel with water bamboo. Book +86 21 6403 0731 or Meituan.", lat: 31.2045, lon: 121.4595, via: "car" },
       { t: "13:30", n: "Tianzifang", zh: "田子坊", city: "上海", k: "sight", note: "Shikumen lanes with small shops and cafés.", lat: 31.2080, lon: 121.4690 },
-      { t: "14:30", n: "Xintiandi", zh: "新天地", city: "上海", k: "sight", note: "Restored shikumen quarter; coffee stop.", lat: 31.2195, lon: 121.4750, via: "car" },
+      { t: "14:30", n: "Xintiandi", zh: "新天地", city: "上海", k: "sight", note: "Coffee stop.", lat: 31.2195, lon: 121.4750, via: "car" },
       { t: "15:30", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Rest.", lat: 31.2468, lon: 121.4935, via: "car" },
-      { t: "16:30", n: "Shanghai Tower · 118F", zh: "上海中心大厦", city: "上海", k: "sight", note: "¥180 per person, passport needed. Sunset around 17:10.", lat: 31.2355, lon: 121.5055, via: "car" },
+      { t: "16:30", n: "Shanghai Tower · 118F", zh: "上海中心大厦", city: "上海", k: "sight", note: "¥180 per person, passport needed. Sunset around 17:15. Allow 1–1.5 hours.", lat: 31.2355, lon: 121.5055, via: "car" },
       { t: "18:30", n: "Yi Long Court · dinner", zh: "逸龙阁 · 上海半岛酒店", city: "上海", k: "food", note: "Michelin-starred Cantonese at The Peninsula.", lat: 31.2425, lon: 121.4905, via: "car" },
-      { t: "20:30", n: "Huangpu night cruise", zh: "十六铺码头", city: "上海", k: "show", note: "About 50 min, ¥135 per person. Sailings about 18:30–21:30.", lat: 31.2285, lon: 121.4990, via: "car" },
+      { t: "20:30", n: "Huangpu night cruise", zh: "十六铺码头", city: "上海", k: "show", note: "About 50 min, ¥135 per person.", lat: 31.2285, lon: 121.4990, via: "car" },
       { t: "21:30", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "", lat: 31.2468, lon: 121.4935, via: "car" }
     ]},
-    { id: "d3", label: "Day 3", short: "3", date: "Wed 28 Oct", title: "Train to Hangzhou, lakeside afternoon", color: "#74D3B8", stops: [
-      { t: "08:00", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Street-cart breakfast (jianbing or cifantuan), a morning walk on the Bund, then check out at 10:45.", lat: 31.2468, lon: 121.4935 },
-      { t: "11:30", n: "Shanghai Hongqiao Station", zh: "上海虹桥站", city: "上海", k: "transit", note: "About 35–45 min by DiDi. Passport is your ticket.", lat: 31.1945, lon: 121.3200, via: "car" },
-      { t: "12:45", n: "Hangzhou East Station", zh: "杭州东站", city: "杭州", k: "transit", note: "Train G257, 12:00 → 12:45, 45 min direct.", lat: 30.2919, lon: 120.2130, via: "train" },
-      { t: "13:45", n: "Zhiweiguan · lunch", zh: "知味观（仁和路店）", city: "杭州", k: "food", note: "Hangzhou dim sum since 1913. Steamed buns and cat's ear pasta (猫耳朵).", lat: 30.2560, lon: 120.1662, via: "car" },
-      { t: "14:45", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Check in; ask for a lake-view room.", lat: 30.2497, lon: 120.1652 },
-      { t: "15:30", n: "Bai Causeway & Broken Bridge", zh: "白堤 · 断桥", city: "杭州", k: "sight", note: "Flat lakeside stroll. Stay for sunset around 17:15.", lat: 30.2598, lon: 120.1560 },
-      { t: "19:00", n: "Hefang Street snack crawl", zh: "河坊街", city: "杭州", k: "food", note: "Congbao hui'er (葱包桧儿), dingsheng cake (定胜糕), stinky tofu, West Lake lotus-root starch (藕粉).", lat: 30.2425, lon: 120.1705, via: "car" },
-      { t: "19:30", n: "Gaoyin Street", zh: "高银街", city: "杭州", k: "food", note: "Old-name restaurant lane next to Hefang Street; Wang Runxing for a sit-down dish.", lat: 30.2447, lon: 120.1693 },
-      { t: "20:00", n: "West Lake musical fountain", zh: "西湖音乐喷泉", city: "杭州", k: "show", note: "Optional. Free, about 15 min, near Hubin. Shows at 19:00 and 20:00.", lat: 30.2585, lon: 120.1622 }
+    { id: "d3", label: "Day 3", short: "3", date: "Tue 27 Oct", title: "Yu Garden, xiaolongbao and the museum", color: "#74D3B8", stops: [
+      { t: "08:15", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Short taxi to breakfast.", lat: 31.2468, lon: 121.4935 },
+      { t: "08:30", n: "Da Hu Chun · breakfast", zh: "大壶春（四川中路）", city: "上海", k: "food", note: "Michelin Bib Gourmand. Fresh pork shengjian (鲜肉生煎) and mini wontons.", lat: 31.2372, lon: 121.4868, via: "car" },
+      { t: "09:15", n: "Yu Garden & City God Temple bazaar", zh: "豫园 · 城隍庙", city: "上海", k: "sight", note: "Garden opens 09:00, ¥30. Go early, then graze the bazaar.", lat: 31.2268, lon: 121.4925 },
+      { t: "11:30", n: "Nanxiang Steamed Bun Restaurant", zh: "南翔馒头店", city: "上海", k: "food", note: "Lunch: classic xiaolongbao, inside the bazaar.", lat: 31.2277, lon: 121.4914 },
+      { t: "13:00", n: "Shanghai Museum", zh: "上海博物馆（人民广场）", city: "上海", k: "sight", note: "Free. Reserve on WeChat (上海博物馆) or show your passport at the visitor centre. About 2 hours.", lat: 31.2285, lon: 121.4755, via: "car" },
+      { t: "15:30", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Rest and pack. Car leaves at 08:00 tomorrow.", lat: 31.2468, lon: 121.4935, via: "car" },
+      { t: "18:00", n: "Fu 1015 · dinner", zh: "福1015（愚园路）", city: "上海", k: "food", note: "Michelin-starred Shanghainese in a garden villa. Hairy crab in season. Book ahead.", lat: 31.2215, lon: 121.4251, via: "car" },
+      { t: "20:30", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Optional last stroll on the Bund.", lat: 31.2468, lon: 121.4935, via: "car" }
     ]},
-    { id: "d4", label: "Day 4", short: "4", date: "Thu 29 Oct", title: "Temples, tea hills and the lake show", color: "#86AEFF", stops: [
-      { t: "07:30", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Early breakfast.", lat: 30.2497, lon: 120.1652 },
-      { t: "08:30", n: "Lingyin Temple & Feilai Feng", zh: "灵隐寺 · 飞来峰", city: "杭州", k: "sight", note: "Reserve 1–7 days ahead. Allow about 2.5 hours.", lat: 30.2413, lon: 120.1013 },
-      { t: "11:30", n: "Longjing Manor", zh: "龙井草堂", city: "杭州", k: "food", note: "Michelin-starred lunch, about ¥700–750 per person. Mobile payment only.", lat: 30.2250, lon: 120.1218 },
-      { t: "14:00", n: "Meijiawu tea terraces · photoshoot", zh: "梅家坞茶园", city: "杭州", k: "sight", note: "Tea tasting and a 1–2 hour travel photoshoot (旅拍).", lat: 30.2043, lon: 120.1105 },
-      { t: "16:30", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Rest before dinner.", lat: 30.2497, lon: 120.1652 },
-      { t: "17:30", n: "Jin Sha · Four Seasons", zh: "金沙厅 · 杭州西子湖四季酒店", city: "杭州", k: "food", note: "Michelin-starred dinner on the north shore.", lat: 30.2598, lon: 120.1375 },
-      { t: "19:40", n: "Enduring Memories of Hangzhou", zh: "最忆是杭州（岳湖）", city: "杭州", k: "show", note: "Zhang Yimou's show staged on the lake.", lat: 30.2593, lon: 120.1412 },
+    { id: "d4", label: "Day 4", short: "4", date: "Wed 28 Oct", title: "Suzhou gardens on the way to Hangzhou", color: "#86AEFF", stops: [
+      { t: "07:30", n: "Hyatt on the Bund · breakfast & check out", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Breakfast at the hotel, check out.", lat: 31.2468, lon: 121.4935 },
+      { t: "08:00", n: "Private car to Suzhou", zh: "上海 → 苏州", city: "上海", k: "transit", note: "About 1.5–2 hours. Same car all the way to Hangzhou; bags in the car.", lat: 31.2468, lon: 121.4935 },
+      { t: "10:00", n: "Humble Administrator's Garden", zh: "拙政园", city: "苏州", k: "sight", note: "¥80. Book a timed ticket on WeChat 苏州园林旅游 from 21 Oct (opens 1–7 days ahead).", lat: 31.3245, lon: 120.6280, via: "car" },
+      { t: "11:30", n: "Suzhou Museum", zh: "苏州博物馆（本馆）", city: "苏州", k: "sight", note: "I. M. Pei building next door. Free; reserve on WeChat 苏州博物馆 from 21 Oct. Last entry 16:00.", lat: 31.3232, lon: 120.6266 },
+      { t: "12:45", n: "Song He Lou · lunch", zh: "松鹤楼（平江路店）", city: "苏州", k: "food", note: "Squirrel-shaped mandarin fish 松鼠桂鱼, shrimp with tea leaves. Walk-in usually fine on a weekday.", lat: 31.3185, lon: 120.6300 },
+      { t: "14:00", n: "Pingjiang Road", zh: "平江路", city: "苏州", k: "sight", note: "Canal-side lane; short rowboat ride (pay at the pier).", lat: 31.3150, lon: 120.6310 },
+      { t: "15:00", n: "Shantang Street", zh: "七里山塘", city: "苏州", k: "sight", note: "Quick look at the old canal street.", lat: 31.3195, lon: 120.6030 },
+      { t: "15:45", n: "Drive to Hangzhou", zh: "苏州 → 杭州", city: "苏州", k: "transit", note: "About 2 hours.", lat: 31.3195, lon: 120.6030 },
+      { t: "18:00", n: "Grand Hotel Hangzhou · check in", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Ask for a lake-view room.", lat: 30.2497, lon: 120.1652, via: "car" },
+      { t: "19:00", n: "Hefang Street snack crawl", zh: "河坊街 + 高银街", city: "杭州", k: "food", note: "Congbao hui'er 葱包桧儿, dingsheng cake 定胜糕, stinky tofu, lotus-root starch 西湖藕粉. Wang Runxing 王润兴 for a sit-down dish.", lat: 30.2425, lon: 120.1705 }
+    ]},
+    { id: "d5", label: "Day 5", short: "5", date: "Thu 29 Oct", title: "Temples, tea hills and the lake show", color: "#BBA2FF", stops: [
+      { t: "07:30", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Breakfast at the hotel.", lat: 30.2497, lon: 120.1652 },
+      { t: "08:30", n: "Lingyin Temple & Feilai Feng", zh: "灵隐寺 · 飞来峰", city: "杭州", k: "sight", note: "Reserve 1–7 days ahead. About 2.5 hours.", lat: 30.2413, lon: 120.1013, via: "car" },
+      { t: "11:30", n: "Longjing Manor · lunch", zh: "龙井草堂", city: "杭州", k: "food", note: "Michelin-starred, set menus about ¥700–750 per person. Book ahead; mobile payment only.", lat: 30.2250, lon: 120.1218 },
+      { t: "14:00", n: "Meijiawu tea terraces · photoshoot", zh: "梅家坞茶园", city: "杭州", k: "sight", note: "Tea tasting and a 1–2 hour photographer (旅拍). Search 龙井茶园旅拍 on Xiaohongshu or Dianping.", lat: 30.2043, lon: 120.1105 },
+      { t: "16:30", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Rest before dinner.", lat: 30.2497, lon: 120.1652, via: "car" },
+      { t: "17:30", n: "Jin Sha · Four Seasons", zh: "金沙厅 · 杭州西子湖四季酒店", city: "杭州", k: "food", note: "Michelin-starred dinner, north shore.", lat: 30.2598, lon: 120.1375 },
+      { t: "19:40", n: "Enduring Memories of Hangzhou", zh: "最忆是杭州（岳湖）", city: "杭州", k: "show", note: "Zhang Yimou's show on the lake. Book tickets.", lat: 30.2593, lon: 120.1412 },
       { t: "21:00", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "", lat: 30.2497, lon: 120.1652, via: "car" }
     ]},
-    { id: "d5", label: "Day 5", short: "5", date: "Fri 30 Oct", title: "West Lake by boat, Xixi by evening", color: "#BBA2FF", stops: [
+    { id: "d6", label: "Day 6", short: "6", date: "Fri 30 Oct", title: "West Lake by boat, Xixi by evening", color: "#F2A071", stops: [
       { t: "07:00", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Short taxi or 15-min walk to breakfast.", lat: 30.2497, lon: 120.1652 },
-      { t: "07:15", n: "Kui Yuan Guan · pian'erchuan breakfast", zh: "奎元馆（解放路）", city: "杭州", k: "food", note: "Hangzhou's signature noodle bowl (片儿川): pork, bamboo shoots, pickled greens. Century-old noodle house; check opening hours the day before.", lat: 30.2563, lon: 120.1702 },
-      { t: "08:30", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Free one-hour boat from the hotel's lakeside gate.", lat: 30.2497, lon: 120.1652 },
-      { t: "09:00", n: "Three Pools Mirroring the Moon", zh: "三潭印月", city: "杭州", k: "sight", note: "Island stop by boat.", lat: 30.2380, lon: 120.1460, via: "boat" },
-      { t: "10:00", n: "Su Causeway", zh: "苏堤", city: "杭州", k: "sight", note: "2.8 km of willows and six arched bridges. Walk or public bike.", lat: 30.2445, lon: 120.1418, via: "boat" },
-      { t: "11:00", n: "Leifeng Pagoda", zh: "雷峰塔", city: "杭州", k: "sight", note: "At the south end of Su Causeway. Views over the south lake.", lat: 30.2313, lon: 120.1490 },
-      { t: "12:30", n: "Louwailou", zh: "楼外楼（孤山）", city: "杭州", k: "food", note: "Since 1848. West Lake vinegar fish, Dongpo pork, Longjing shrimp.", lat: 30.2530, lon: 120.1455, via: "car" },
-      { t: "14:30", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Rest.", lat: 30.2497, lon: 120.1652 },
-      { t: "15:30", n: "Xixi National Wetland Park", zh: "西溪国家湿地公园", city: "杭州", k: "sight", note: "Electric boat through the canals as the light drops.", lat: 30.2725, lon: 120.0660 },
-      { t: "18:00", n: "Xin Rong Ji · Xixi", zh: "新荣记（西溪）", city: "杭州", k: "food", note: "Michelin-starred Taizhou seafood. Pin is approximate.", lat: 30.2750, lon: 120.0760 },
-      { t: "20:30", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "", lat: 30.2497, lon: 120.1652 }
+      { t: "07:15", n: "Kui Yuan Guan · breakfast", zh: "奎元馆（解放路）", city: "杭州", k: "food", note: "Pian'erchuan noodles 片儿川. Check opening hours the day before.", lat: 30.2563, lon: 120.1702, via: "car" },
+      { t: "08:30", n: "Hotel boat on West Lake", zh: "杭州大华饭店", city: "杭州", k: "sight", note: "Free one-hour tour from the hotel's lakeside gate. Ask about stopping at Three Pools Mirroring the Moon 三潭印月.", lat: 30.2497, lon: 120.1652 },
+      { t: "10:00", n: "Su Causeway", zh: "苏堤", city: "杭州", k: "sight", note: "2.8 km of willows and six bridges. Walk or public bike.", lat: 30.2445, lon: 120.1418, via: "boat" },
+      { t: "11:00", n: "Leifeng Pagoda", zh: "雷峰塔", city: "杭州", k: "sight", note: "Views over the south lake.", lat: 30.2313, lon: 120.1490 },
+      { t: "12:30", n: "Louwailou · lunch", zh: "楼外楼（孤山）", city: "杭州", k: "food", note: "Since 1848. West Lake vinegar fish, Dongpo pork, Longjing shrimp.", lat: 30.2530, lon: 120.1455, via: "car" },
+      { t: "14:00", n: "Bai Causeway & Broken Bridge", zh: "白堤 · 断桥", city: "杭州", k: "sight", note: "Walk off lunch along the causeway.", lat: 30.2598, lon: 120.1560 },
+      { t: "15:00", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Rest.", lat: 30.2497, lon: 120.1652 },
+      { t: "16:00", n: "Xixi National Wetland Park", zh: "西溪国家湿地公园", city: "杭州", k: "sight", note: "About 25 min by car. Electric boat as the light drops (sunset about 17:20).", lat: 30.2725, lon: 120.0660, via: "car" },
+      { t: "18:00", n: "Xin Rong Ji · dinner", zh: "新荣记（西溪）", city: "杭州", k: "food", note: "Michelin-starred Taizhou seafood. Try the yellow croaker.", lat: 30.2750, lon: 120.0760 },
+      { t: "20:30", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "", lat: 30.2497, lon: 120.1652, via: "car" }
     ]},
-    { id: "d6", label: "Day 6", short: "6", date: "Sat 31 Oct", title: "Suzhou gardens on the way back to Shanghai", color: "#F2A071", stops: [
-      { t: "08:15", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Check out. One car with driver all the way to Shanghai via Suzhou (about 2 h to Suzhou); bags stay in the car.", lat: 30.2497, lon: 120.1652 },
-      { t: "10:30", n: "Humble Administrator's Garden", zh: "拙政园", city: "苏州", k: "sight", note: "Suzhou's most famous classical garden (UNESCO). Book timed tickets ahead on the official WeChat mini-program; Saturdays sell out.", lat: 31.3245, lon: 120.6280 },
-      { t: "12:00", n: "Suzhou Museum", zh: "苏州博物馆（本馆）", city: "苏州", k: "sight", note: "I. M. Pei building next door to the garden. Free, but reserve a slot in advance with passport.", lat: 31.3232, lon: 120.6266 },
-      { t: "13:00", n: "Song He Lou · Pingjiang Rd", zh: "松鹤楼（平江路店）", city: "苏州", k: "food", note: "Classic Suzhou cooking since the Qing dynasty. Order squirrel-shaped mandarin fish 松鼠桂鱼 and shrimp with tea leaves. Qi Yun Lou 齐云楼 from your doc is an alternative.", lat: 31.3185, lon: 120.6300 },
-      { t: "14:30", n: "Pingjiang Road", zh: "平江路", city: "苏州", k: "sight", note: "Canal-side lane of teahouses and snack shops; take a short rowboat ride on the canal.", lat: 31.3150, lon: 120.6310 },
-      { t: "16:30", n: "Shantang Street", zh: "七里山塘", city: "苏州", k: "sight", note: "Old canal street, best at dusk when the lanterns come on. Snack your way through for an early dinner.", lat: 31.3195, lon: 120.6030 },
-      { t: "20:30", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Leave Suzhou about 18:30; about 1.5–2 h to Shanghai on a Saturday evening. Last night of the trip.", lat: 31.2468, lon: 121.4935 }
-    ]},
-    { id: "d7", label: "Day 7", short: "7", date: "Sun 1 Nov", title: "French Concession morning, fly home", color: "#62C9DE", stops: [
-      { t: "09:00", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Breakfast, check out and leave bags at the front desk.", lat: 31.2468, lon: 121.4935 },
-      { t: "09:30", n: "Wukang Mansion", zh: "武康大楼", city: "上海", k: "sight", note: "Start of the plane-tree walk down Wukang Road.", lat: 31.2046, lon: 121.4378, via: "car" },
-      { t: "10:30", n: "Anfu Road", zh: "安福路", city: "上海", k: "sight", note: "Boutiques and a coffee stop.", lat: 31.2139, lon: 121.4442 },
-      { t: "11:30", n: "Fu 1015", zh: "福1015（愚园路）", city: "上海", k: "food", note: "Lunch: Michelin-starred Shanghainese in a garden villa. Hairy crab is in season. Pin is approximate.", lat: 31.2215, lon: 121.4251 },
-      { t: "13:00", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Collect bags; car to the airport at 13:30.", lat: 31.2468, lon: 121.4935 },
-      { t: "14:45", n: "Pudong Airport", zh: "浦东国际机场", city: "上海", k: "transit", note: "Juneyao departs 17:25, lands KL 23:25.", lat: 31.1500, lon: 121.8020 }
+    { id: "d7", label: "Day 7", short: "7", date: "Sat 31 Oct", title: "Grand Canal morning, fly home at night", color: "#62C9DE", stops: [
+      { t: "08:00", n: "Grand Hotel Hangzhou · breakfast", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Ask for a late checkout, or leave bags at the front desk.", lat: 30.2497, lon: 120.1652 },
+      { t: "09:30", n: "Gongchen Bridge & Qiaoxi historic block", zh: "拱宸桥 · 桥西历史街区", city: "杭州", k: "sight", note: "About 30 min by taxi. Stone bridge over the Grand Canal and old riverside lanes.", lat: 30.3270, lon: 120.1290, via: "car" },
+      { t: "11:00", n: "Grand Canal water bus to Wulinmen", zh: "武林门码头", city: "杭州", k: "sight", note: "Check times at the pier, or take a taxi.", lat: 30.2790, lon: 120.1620, via: "boat" },
+      { t: "12:30", n: "Zhiweiguan · lunch", zh: "知味观（仁和路店）", city: "杭州", k: "food", note: "Hangzhou dim sum since 1913. Steamed buns, cat's ear pasta 猫耳朵.", lat: 30.2560, lon: 120.1662 },
+      { t: "14:00", n: "Free afternoon near the hotel", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Rest, a lakeside café or a massage.", lat: 30.2497, lon: 120.1652 },
+      { t: "17:30", n: "Gaoyin Street · early dinner", zh: "高银街", city: "杭州", k: "food", note: "e.g. Wang Runxing 王润兴.", lat: 30.2447, lon: 120.1693 },
+      { t: "19:00", n: "West Lake musical fountain", zh: "西湖音乐喷泉", city: "杭州", k: "show", note: "Free, about 15 min, near Hubin. Check show times on the day.", lat: 30.2585, lon: 120.1622 },
+      { t: "19:30", n: "Grand Hotel Hangzhou · collect bags", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "", lat: 30.2497, lon: 120.1652 },
+      { t: "19:45", n: "Car to Xiaoshan Airport", zh: "杭州萧山国际机场", city: "杭州", k: "transit", note: "About 50 min.", lat: 30.2297, lon: 120.4343, via: "car" },
+      { t: "23:40", n: "Flight to KL", zh: "杭州萧山国际机场", city: "杭州", k: "transit", note: "AirAsia X direct. Lands KLIA 05:20, Sun 1 Nov.", lat: 30.2297, lon: 120.4343 }
     ]}
   ];
 
@@ -414,7 +539,259 @@
   ];
   const KIND = { hotel: "Stay", food: "Eat", sight: "See", show: "Show", transit: "Transit" };
   const MODE = { walk: "walk", car: "drive", boat: "boat", train: "train" };
-  const STORE = "jiangnan-atlas-v7";
+  const STORE = "jiangnan-atlas-v8";
+
+  const TODOS = [
+    [ // Day 1
+      ["Download DiDi app and top up Alipay / WeChat Pay before landing", "Have passport and hotel address screenshot ready for immigration", "Get a local SIM or activate eSIM at the airport", "Withdraw some cash — small notes for tips and street food"],
+      ["Pre-book car on DiDi or arrange hotel transfer", "Save hotel address in Chinese: 上海外滩茂悦大酒店 黄浦路199号"],
+      ["Request early check-in (standard is 15:00)", "Ask for a river-view room upgrade", "Collect hotel business card in Chinese for taxis back"],
+      ["Reserve The Lobby afternoon tea: +86 21 2327 2888", "Dress code: smart casual", "5 min walk over Waibaidu Bridge from hotel"],
+      ["Arrive before 17:30 for golden-hour photos", "Best angle: near the Customs House clock tower", "Pudong skyline lights come on around 18:00"],
+      ["Walk the pedestrian section west toward People's Square", "Watch for tourist scams — politely decline tea-ceremony invitations"],
+      ["Order 鲜肉生煎 (fresh pork shengjian) — about ¥8 for 4 pcs", "Bite a small hole first to let steam out — soup is scalding", "Alipay / WeChat Pay or cash"],
+      ["Taxi back — keep hotel business card handy"]
+    ],
+    [ // Day 2
+      [],
+      ["2026 Michelin Guide listed — noodle house since 1878", "Order 三鲜小馄饨 (three-treasure soup noodles)", "Alipay / WeChat Pay only — no cash accepted"],
+      ["About 20 min by car from breakfast", "Photo the iconic 1924 flatiron building at the Wukang–Huaihai intersection", "Stroll Wukang Road under the plane trees — peak autumn foliage in late Oct"],
+      ["Browse boutiques and indie coffee shops", "Good flat-white stop at any of the specialty cafés"],
+      ["Book ahead: +86 21 6403 0731 or Meituan app", "One Michelin star — Shanghainese home-style", "Must-order: 蟹粉拌饭 (crabmeat roe rice) and fried eel with water bamboo"],
+      ["Enter from Taikang Road, Lane 210", "Browse shikumen alleys for local crafts and cafés", "Can get crowded — keep bags close"],
+      ["Coffee stop at one of the terrace cafés", "Browse the renovated shikumen heritage area"],
+      [],
+      ["Buy tickets online: ¥180 per person", "Bring passport — required for entry", "Arrive before 16:30 for sunset (around 17:15)", "118F observation deck — world's highest"],
+      ["Reserve via The Peninsula concierge or OpenTable", "Michelin-starred Cantonese", "Dress code: smart casual, no shorts or flip-flops"],
+      ["Board at Shiliupu Wharf 十六铺码头", "About 50 min on the water — ¥135 per person", "Buy tickets at the pier or on Meituan app"],
+      []
+    ],
+    [ // Day 3
+      [],
+      ["Michelin Bib Gourmand — since 1932", "Order 鲜肉生煎 (pork shengjian) and 小馄饨 (mini wontons)", "Mobile payment only — no cash"],
+      ["Garden opens 09:00, ¥30 entry — go early to beat crowds", "Allow 1–1.5 hours in the garden", "Then graze the City God Temple bazaar outside"],
+      ["Classic xiaolongbao — ground floor is quickest, upper floors have better seating", "Dip in black vinegar with julienned ginger", "Expect a queue at peak lunch — arrive by 11:15"],
+      ["Free entry — reserve on WeChat mini-program 上海博物馆", "Or show passport at the visitor centre", "Allow about 2 hours — bronze gallery and ceramics are highlights"],
+      ["Rest and pack — private car leaves at 08:00 tomorrow for Suzhou", "Confirm car pickup with driver tonight"],
+      ["Book ahead — very popular", "Michelin-starred Shanghainese in a 1930s garden villa", "Hairy crab 大闸蟹 is in season (Oct–Nov) — must try", "Also order smoked fish 熏鱼 and braised pork belly"],
+      ["Optional last stroll on the Bund — lights stay on until 22:00"]
+    ],
+    [ // Day 4
+      ["Breakfast at the hotel buffet", "Check out by 08:00 — bags go in the car", "Same car drives all the way to Hangzhou tonight"],
+      ["About 1.5–2 hours via G2 expressway", "Confirm pickup with driver the night before", "Save Suzhou stops in Chinese on your phone"],
+      ["¥80 entry — book timed ticket on WeChat 苏州园林旅游 from 21 Oct", "Opens 1–7 days ahead — book early, slots sell out", "UNESCO World Heritage Site — allow about 1.5 hours"],
+      ["Free entry — reserve on WeChat 苏州博物馆 from 21 Oct", "I. M. Pei's last major work — stunning architecture", "Last entry 16:00 — plan accordingly"],
+      ["Order 松鼠桂鱼 (squirrel-shaped mandarin fish)", "Also try shrimp with Biluochun tea leaves 碧螺虾仁", "Walk-in usually fine on a weekday"],
+      ["Canal-side lane with teahouses and silk shops", "Short rowboat ride available — pay at the pier", "Pick up Suzhou silk scarves or fans as souvenirs"],
+      ["Quick walk along the old canal street", "Less touristy than Pingjiang Road — good for photos"],
+      ["About 2 hours via G25 expressway to Hangzhou"],
+      ["Ask for a lake-view room", "Collect hotel business card in Chinese", "Check if free West Lake boat tour is available tomorrow morning"],
+      ["Street food crawl: 葱包桧儿 congbao hui'er, 定胜糕 dingsheng cake", "Try the stinky tofu 臭豆腐 and lotus-root starch 西湖藕粉", "Wang Runxing 王润兴 for a sit-down dish if still hungry"]
+    ],
+    [ // Day 5
+      ["Breakfast at the hotel"],
+      ["Reserve 1–7 days ahead on WeChat or Meituan", "Entry: ¥75 Feilai Feng park + ¥30 temple", "Allow about 2.5 hours — wear comfortable walking shoes", "Stone carvings at Feilai Feng are the highlight — don't skip"],
+      ["Book ahead — Michelin-starred", "Set menus about ¥700–750 per person", "Mobile payment only — no cash", "Try the Longjing shrimp 龙井虾仁 and tea-smoked duck"],
+      ["Free to walk the tea terraces — beautiful in late Oct", "Tea tasting at a local family farm — buy fresh Longjing as a souvenir", "Book photographer: search 龙井茶园旅拍 on Xiaohongshu or Dianping", "Allow 1–2 hours for the photo session"],
+      ["Rest and freshen up before dinner"],
+      ["Reserve via Four Seasons concierge — Michelin-starred", "Try the Dongpo pork 东坡肉 and beggar's chicken 叫花鸡", "Smart casual dress code"],
+      ["Zhang Yimou's water show on Yue Lake — outdoor, rain or shine", "Book tickets in advance on Damai 大麦 or Maoyan 猫眼", "Bring a light jacket — it's by the water and gets cool at night", "Show starts after sunset — about 70 min — no intermission"],
+      []
+    ],
+    [ // Day 6
+      ["Short taxi or 15-min walk to breakfast"],
+      ["Order 片儿川 pian'erchuan noodles — Hangzhou's signature", "Check opening hours the day before — can close early", "Cash or mobile payment"],
+      ["Free 1-hour tour from hotel's lakeside gate — ask at reception", "Request a stop at Three Pools Mirroring the Moon 三潭印月", "Bring sunscreen and a hat — open water, no shade"],
+      ["2.8 km walk through willows and six stone bridges", "Rent a public bike for a faster ride — scan with Alipay", "Best morning light for photos — mist on the lake"],
+      ["¥40 entry — take the elevator up, walk down", "Panoramic views over the south lake", "Legend of the White Snake origin — read up before visiting"],
+      ["Since 1848 — Hangzhou's most famous restaurant", "Must-order: 西湖醋鱼 vinegar fish, 东坡肉 Dongpo pork, 龙井虾仁 Longjing shrimp", "Arrive early or book — gets crowded at noon"],
+      ["Walk off lunch along the causeway toward Broken Bridge 断桥", "Legend of the White Snake romance — the bridge where they met", "Good sunset spot if you linger"],
+      [],
+      ["About 25 min by car from hotel", "Take the electric boat ride as the light drops — sunset about 17:20", "¥80 entry includes boat", "Bring mosquito repellent — wetland area"],
+      ["Michelin-starred Taizhou seafood near the wetland", "Must-try: 黄鱼 yellow croaker, done many ways", "Reserve ahead — limited seating"],
+      []
+    ],
+    [ // Day 7
+      ["Ask for late checkout or leave bags at front desk", "Final Hangzhou breakfast — savour it"],
+      ["About 30 min by taxi from hotel", "Walk the 1631 stone arch bridge over the Grand Canal", "Browse Qiaoxi historic block — umbrella museum, knife-scissors museum"],
+      ["Check departure times at the pier — runs every 30–60 min", "About 40 min to Wulinmen — ¥3 per person", "Alipay scan or exact change — no card accepted"],
+      ["Hangzhou dim sum since 1913", "Must-order: steamed buns and 猫耳朵 cat's ear pasta", "One last 东坡肉 Dongpo pork if you can't resist"],
+      ["Rest at a lakeside café or book a massage", "Last chance to buy Longjing tea or silk as souvenirs", "Walk around the lake one final time"],
+      ["Try Wang Runxing 王润兴 if you haven't yet", "Last meal in Hangzhou — order your favourites"],
+      ["Free show, about 15 min, near Hubin pedestrian street", "Check show times on the day — usually 19:00 and 20:00", "Good viewing spot: benches facing the lake along Hubin Road"],
+      ["Collect bags from the front desk"],
+      ["About 50 min to Xiaoshan Airport", "Confirm car with driver the night before", "Check flight status before leaving"],
+      ["AirAsia X direct HGH → KUL", "Lands KLIA 05:20 Sun 1 Nov", "Check in online 14 days before at airasia.com", "Pack snacks — no meal included on AirAsia X"]
+    ]
+  ];
+
+  const PREREQS = [
+    [ // Day 1
+      ["Set up Alipay and WeChat Pay — link an international card (Visa/Mastercard)", "Download DiDi (ride-hailing) and Meituan (food/tickets)", "Activate China eSIM or buy a SIM plan before departure", "Photocopy passport info page — carry the copy separately", "Save hotel address + key stops in Chinese on your phone"],
+      ["Pre-book airport transfer via hotel or DiDi", "Have hotel address in Chinese ready to show the driver"],
+      ["Email hotel for early check-in request"],
+      ["Reserve afternoon tea 3–5 days ahead"],
+      [],
+      [],
+      [],
+      []
+    ],
+    [ // Day 2
+      [],
+      [],
+      [],
+      [],
+      ["Reserve Ren He Guan 3–5 days ahead: +86 21 6403 0731 or Meituan"],
+      [],
+      [],
+      [],
+      ["Buy Shanghai Tower tickets online in advance"],
+      ["Reserve Yi Long Court via The Peninsula concierge — at least 3 days ahead"],
+      [],
+      []
+    ],
+    [ // Day 3
+      [],
+      [],
+      [],
+      [],
+      ["Reserve Shanghai Museum on WeChat mini-program 上海博物馆 — 1–7 days ahead"],
+      ["Confirm Day 4 private car pickup with driver"],
+      ["Reserve Fu 1015 at least 3–5 days ahead — very popular"],
+      []
+    ],
+    [ // Day 4
+      [],
+      ["Confirm private car pickup time and driver contact the night before"],
+      ["Book timed ticket on WeChat 苏州园林旅游 — opens 1–7 days before, from 21 Oct"],
+      ["Reserve Suzhou Museum on WeChat 苏州博物馆 — opens 1–7 days before, from 21 Oct"],
+      [],
+      [],
+      [],
+      [],
+      ["Email Grand Hotel Hangzhou for lake-view room request"],
+      []
+    ],
+    [ // Day 5
+      [],
+      ["Reserve Lingyin Temple on WeChat or Meituan — 1–7 days ahead"],
+      ["Reserve Longjing Manor at least 3–5 days ahead"],
+      ["Book photographer on Xiaohongshu or Dianping — search 龙井茶园旅拍, book 3+ days ahead"],
+      [],
+      ["Reserve Jin Sha via Four Seasons concierge — at least 1 week ahead"],
+      ["Buy Enduring Memories show tickets on Damai 大麦 or Maoyan 猫眼 — 1–2 weeks ahead"],
+      []
+    ],
+    [ // Day 6
+      [],
+      ["Check Kui Yuan Guan opening hours the day before"],
+      ["Ask hotel reception about next-morning boat schedule"],
+      [],
+      [],
+      ["Book Louwailou or arrive before 11:30 to avoid the queue"],
+      [],
+      [],
+      [],
+      ["Reserve Xin Rong Ji at least 3–5 days ahead"],
+      []
+    ],
+    [ // Day 7
+      ["Arrange late checkout or confirm luggage storage with front desk"],
+      [],
+      ["Check Grand Canal water bus schedule the day before at hotel reception"],
+      [],
+      [],
+      [],
+      ["Check musical fountain show times on the day — usually 19:00 / 20:00"],
+      [],
+      ["Confirm airport car with driver the night before"],
+      ["Check in online on airasia.com — opens 14 days before departure"]
+    ]
+  ];
+
+  const TICKETS = [
+    [ // Day 1
+      ["Flight: Shanghai Airlines KUL → PVG (07:05–12:25)"],
+      [],
+      [],
+      ["The Peninsula afternoon tea — reserve, no advance ticket needed"],
+      [],
+      [],
+      [],
+      []
+    ],
+    [ // Day 2
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      ["Shanghai Tower 118F observation — ¥180/person — buy online at shang-hai-center.com or Meituan"],
+      [],
+      ["Huangpu night cruise — ¥135/person — buy at Shiliupu Wharf or Meituan"],
+      []
+    ],
+    [ // Day 3
+      [],
+      [],
+      ["Yu Garden — ¥30 entry — buy at the gate or Meituan"],
+      [],
+      ["Shanghai Museum — free — reserve on WeChat 上海博物馆 mini-program"],
+      [],
+      [],
+      []
+    ],
+    [ // Day 4
+      [],
+      [],
+      ["Humble Administrator's Garden — ¥80 — timed ticket on WeChat 苏州园林旅游"],
+      ["Suzhou Museum — free — reserve on WeChat 苏州博物馆"],
+      [],
+      [],
+      [],
+      [],
+      [],
+      []
+    ],
+    [ // Day 5
+      [],
+      ["Feilai Feng scenic area — ¥75 + Lingyin Temple — ¥30 — WeChat or Meituan"],
+      [],
+      [],
+      [],
+      [],
+      ["Enduring Memories of Hangzhou — ¥300–600/person — Damai 大麦 or Maoyan 猫眼 app"],
+      []
+    ],
+    [ // Day 6
+      [],
+      [],
+      [],
+      [],
+      ["Leifeng Pagoda — ¥40 — buy at the gate or Meituan"],
+      [],
+      [],
+      [],
+      ["Xixi Wetland Park — ¥80 (includes boat) — buy at the gate or Meituan"],
+      [],
+      []
+    ],
+    [ // Day 7
+      [],
+      [],
+      ["Grand Canal water bus — ¥3/person — Alipay scan or exact change at the pier"],
+      [],
+      [],
+      [],
+      ["West Lake musical fountain — free, no ticket needed"],
+      [],
+      [],
+      ["Flight: AirAsia X HGH → KUL (23:40–05:20+1) — check in online at airasia.com"]
+    ]
+  ];
 
   /* ============================================================ state */
   const clone = o => JSON.parse(JSON.stringify(o));
@@ -528,23 +905,25 @@
     const m = new THREE.Mesh(g, mat); m.renderOrder = flat(mat, order); scene.add(m); return m;
   }
 
+  const groundU = { uG1: { value: new THREE.Color(0.071, 0.086, 0.11) }, uG2: { value: new THREE.Color(0.052, 0.062, 0.08) } };
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), new THREE.ShaderMaterial({
-    uniforms: { uFog: U.fog, uFogColor: U.fogColor },
+    uniforms: { uFog: U.fog, uFogColor: U.fogColor, uG1: groundU.uG1, uG2: groundU.uG2 },
     vertexShader: `varying float vD; varying vec3 vW; void main(){ vec4 w = modelMatrix*vec4(position,1.); vW=w.xyz; vec4 mv=viewMatrix*w; vD=-mv.z; gl_Position=projectionMatrix*mv; }`,
-    fragmentShader: `uniform float uFog; uniform vec3 uFogColor; varying float vD; varying vec3 vW;
-      void main(){ float r = length(vW.xz - vec2(-10.,20.)); vec3 c = mix(vec3(.071,.086,.11), vec3(.052,.062,.08), smoothstep(0.,420.,r));
+    fragmentShader: `uniform float uFog; uniform vec3 uFogColor, uG1, uG2; varying float vD; varying vec3 vW;
+      void main(){ float r = length(vW.xz - vec2(-10.,20.)); vec3 c = mix(uG1, uG2, smoothstep(0.,420.,r));
         float f = 1.-exp(-uFog*uFog*vD*vD); gl_FragColor = vec4(mix(c,uFogColor,f),1.); }`
   }));
   ground.rotation.x = -Math.PI / 2; ground.renderOrder = flat(ground.material, 0); scene.add(ground);
 
+  const waterU = { uW1: { value: new THREE.Color(0.036, 0.075, 0.108) }, uW2: { value: new THREE.Color(0.09, 0.15, 0.2) } };
   const waterMat = new THREE.ShaderMaterial({
-    uniforms: { uTime: U.time, uFog: U.fog, uFogColor: U.fogColor, uScale: U.scale },
+    uniforms: { uTime: U.time, uFog: U.fog, uFogColor: U.fogColor, uScale: U.scale, uW1: waterU.uW1, uW2: waterU.uW2 },
     vertexShader: `varying float vD; varying vec3 vW; void main(){ vec4 w = modelMatrix*vec4(position,1.); vW=w.xyz; vec4 mv=viewMatrix*w; vD=-mv.z; gl_Position=projectionMatrix*mv; }`,
-    fragmentShader: `uniform float uTime,uFog,uScale; uniform vec3 uFogColor; varying float vD; varying vec3 vW;
+    fragmentShader: `uniform float uTime,uFog,uScale; uniform vec3 uFogColor, uW1, uW2; varying float vD; varying vec3 vW;
       void main(){ vec2 p = vW.xz*uScale;
         float w = sin(p.x*1.3+uTime*.55)*sin(p.y*1.1-uTime*.4) + .6*sin((p.x+p.y)*2.7-uTime*.9) + .35*sin(p.x*4.1-p.y*3.3+uTime*1.2);
         float sh = smoothstep(1.15,1.75,w);
-        vec3 c = vec3(.036,.075,.108) + vec3(.09,.15,.2)*sh*.55;
+        vec3 c = uW1 + uW2*sh*.55;
         float f = 1.-exp(-uFog*uFog*vD*vD); gl_FragColor = vec4(mix(c,uFogColor,f),1.); }`
   });
   const landMat = new THREE.MeshBasicMaterial({ color: 0x10151c });
@@ -1027,8 +1406,8 @@
       const stops = days.reduce((a, d) => a + d.stops.length, 0);
       head.style.setProperty("--c", "#d8b67a");
       head.innerHTML = `
-        <div class="row"><span class="daytag">Whole trip</span><span class="date">26 Oct – 1 Nov</span></div>
-        <h2>Shanghai and Hangzhou, one week</h2>
+        <div class="row"><span class="daytag">Whole trip</span><span class="date">25–31 Oct</span></div>
+        <h2>Shanghai, Suzhou and Hangzhou, one week</h2>
         <div class="stats-row"><div class="stats">
           <div class="stat"><b data-n="${days.length}">${days.length}</b><span>Days</span></div>
           <div class="stat"><b data-n="${stops}">${stops}</b><span>Stops</span></div>
@@ -1041,8 +1420,7 @@
           <span class="km">${fmtKm(dayKm(d))}</span>
         </button>`).join("");
       foot.innerHTML = `
-        <div class="btns"><button class="btn${resetArmed ? " armed" : ""}" id="resetBtn">${ICON.reset}<span>${resetArmed ? "Tap again to reset all" : "Reset to original plan"}</span></button></div>
-        <p class="fine">*Straight-line distances; roads add roughly a third. Pins are approximate — tap a stop and use "Find in Amap" for the exact spot. Edits are saved on this device.</p>`;
+        <div class="btns"><button class="btn${resetArmed ? " armed" : ""}" id="resetBtn">${ICON.reset}<span>${resetArmed ? "Tap again to reset all" : "Reset to original plan"}</span></button></div>`;
     } else {
       const day = days[sel], L = legs(day), legTo = new Map(L.map(l => [l.to, l]));
       head.style.setProperty("--c", day.color);
@@ -1083,8 +1461,7 @@
         <div class="btns">
           <button class="btn primary" id="addBtn">${ICON.plus}<span>Add stop</span></button>
           <button class="btn${resetArmed ? " armed" : ""}" id="resetBtn">${ICON.reset}<span>${resetArmed ? "Tap again" : "Reset day"}</span></button>
-        </div>
-        <p class="fine">*Straight-line distance between stops; driving is longer. Dotted = walk, solid = drive, dashed = boat.</p>`;
+        </div>`;
     }
     if (animate) head.querySelectorAll("b[data-n]").forEach(b => {
       const v = +b.dataset.n; countUp(b, v, b.hasAttribute("data-km") && sel !== "all" ? fmtKm : x => String(Math.round(x)));
@@ -1166,7 +1543,7 @@
   function focusStop(d, i, dur = 1.5, from = "map") {
     const s = days[d].stops[i];
     selStop = { d, i }; renderPanel();
-    if (isMobile()) setSheet(from === "list" ? "half" : "peek");
+    if (isMobile()) setSheet(from === "list" ? "full" : "peek");
     if (mapped(s)) {
       const v = stopView(s), cur = sph();
       flyTo({ t: v.t, d: Math.min(v.d, Math.max(cur.d, v.d * 0.6)), polar: tiltOn ? 0.95 : 0.001, az: cur.az + (tour ? 0.35 : 0) }, dur);
@@ -1242,7 +1619,7 @@
     panel.classList.remove("dragging");
     const d = sdrag; sdrag = null;
     if (!d.moved) {
-      if (sheet.state === "peek") setSheet("half");
+      if (sheet.state === "peek") setSheet("full");
       else if (d.el === handle) setSheet("peek");
       return;
     }
@@ -1414,6 +1791,235 @@
   setTimeout(() => { document.getElementById("app").classList.remove("boot"); resize(); }, 2200);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { texCache.clear(); buildDyn(); moveIndicator(true); setSheet(sheet.state); resize(); });
   renderer.setAnimationLoop(frame);
+
+  /* ============================================================ theme toggle */
+  const themeBtn = document.getElementById("themeToggle");
+  const themeIcon = document.getElementById("themeIcon");
+  const THEME_KEY = "jiangnan-theme";
+  const sunSVG = '<circle cx="8" cy="8" r="3"/><path d="M8 1.5v1M8 13.5v1M1.5 8h1M13.5 8h1M3.4 3.4l.7.7M11.9 11.9l.7.7M3.4 12.6l.7-.7M11.9 4.1l.7-.7"/>';
+  const moonSVG = '<path d="M13.1 10.3A5.5 5.5 0 0 1 5.7 2.9 5.5 5.5 0 1 0 13.1 10.3Z"/>';
+  function applyTheme(t) {
+    document.documentElement.setAttribute("data-theme", t);
+    themeIcon.innerHTML = t === "light" ? moonSVG : sunSVG;
+    const light = t === "light";
+    // update Three.js background + fog
+    const bg = light ? 0xf5f3ef : 0x07090d;
+    BG.setHex(bg); scene.background = BG; U.fogColor.value.setHex(bg);
+    // ground
+    if (light) { groundU.uG1.value.setRGB(0.90, 0.89, 0.86); groundU.uG2.value.setRGB(0.93, 0.92, 0.90); }
+    else       { groundU.uG1.value.setRGB(0.071, 0.086, 0.11); groundU.uG2.value.setRGB(0.052, 0.062, 0.08); }
+    // water
+    if (light) { waterU.uW1.value.setRGB(0.68, 0.80, 0.88); waterU.uW2.value.setRGB(0.06, 0.10, 0.15); }
+    else       { waterU.uW1.value.setRGB(0.036, 0.075, 0.108); waterU.uW2.value.setRGB(0.09, 0.15, 0.2); }
+    // land + causeway
+    landMat.color.setHex(light ? 0xe8e5df : 0x10151c);
+    causeMat.color.setHex(light ? 0xd6d3cc : 0x1b222b);
+  }
+  try { const saved = localStorage.getItem(THEME_KEY); if (saved) applyTheme(saved); } catch (e) {}
+  themeBtn.addEventListener("click", () => {
+    const next = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
+    applyTheme(next);
+    try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+  });
+
+  /* ============================================================ list view */
+  const listview = document.getElementById("listview");
+  const listBtn = document.getElementById("listToggle");
+  let listOpen = false;
+
+  let lvDay = "all";
+
+  function renderListView() {
+    const closeIcon = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" width="16" height="16"><path d="M4 4l8 8M12 4l-8 8"/></svg>';
+    const daysToShow = lvDay === "all" ? days.map((d, i) => ({ d, i })) : [{ d: days[lvDay], i: lvDay }];
+
+    let html = `<div class="lv-topbar">
+      <div class="lv-topbar-inner">
+        <h2>Itinerary</h2>
+        <button class="lv-close" id="lvClose" aria-label="Close list view">${closeIcon}</button>
+      </div>
+      <div class="lv-daypicker" id="lvDayPicker">
+        <button class="lv-dpick${lvDay === "all" ? " active" : ""}" data-ld="all" style="--c:#d8b67a"><span class="lv-dp-dot" style="background:#d8b67a"></span>All</button>
+        ${days.map((d, i) => `<button class="lv-dpick${lvDay === i ? " active" : ""}" data-ld="${i}" style="--c:${d.color}"><span class="lv-dp-dot" style="background:${d.color}"></span>${esc(d.short)}<small>${esc(d.date.split(" ").slice(1).join(" "))}</small></button>`).join("")}
+      </div>
+    </div>`;
+
+    html += `<div class="listview-inner">`;
+    daysToShow.forEach(({ d: day, i: di }) => {
+      const L = legs(day), legTo = new Map(L.map(l => [l.to, l]));
+      html += `<div class="lv-day" data-day="${di}">
+        <div class="lv-day-head">
+          <span class="lv-dot" style="background:${day.color};box-shadow:0 0 8px ${day.color}"></span>
+          <span class="lv-dtitle"><b>${esc(day.label)} — ${esc(day.title)}</b><span>${esc(day.date)} · ${day.stops.length} stops · ${fmtKm(dayKm(day))}</span></span>
+        </div>
+        <div class="lv-stops">`;
+      day.stops.forEach((s, si) => {
+        const leg = legTo.get(si);
+        const todos = TODOS[di] && TODOS[di][si] && TODOS[di][si].length ? TODOS[di][si] : null;
+        const prereqs = PREREQS[di] && PREREQS[di][si] && PREREQS[di][si].length ? PREREQS[di][si] : null;
+        const tickets = TICKETS[di] && TICKETS[di][si] && TICKETS[di][si].length ? TICKETS[di][si] : null;
+        const hasDetail = todos || prereqs || tickets;
+        if (leg) {
+          html += `<div class="lv-leg">${fmtKm(leg.d)} · ${MODE[leg.mode]}</div>`;
+        }
+        const chevronSvg = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 4l4 4-4 4"/></svg>';
+        // figure out which tabs exist and which is first
+        const tabs = [];
+        if (todos) tabs.push({ id: "todo", label: "To-do", items: todos, cls: "checklist" });
+        if (prereqs) tabs.push({ id: "prereq", label: "Pre-requisite", items: prereqs, cls: "bullet" });
+        if (tickets) tabs.push({ id: "ticket", label: "Tickets", items: tickets, cls: "ticket" });
+        html += `<div class="lv-row${hasDetail ? "" : " no-todo"}">
+          <div class="lv-row-head" ${hasDetail ? 'data-expand' : ''}>
+            <span class="lv-time">${esc(s.t || "—")}</span>
+            <span class="lv-name">${esc(s.n)}${s.zh ? `<span class="lv-zh">${esc(s.zh)}</span>` : ""}</span>
+            ${hasDetail ? `<span class="lv-chevron">${chevronSvg}</span>` : '<span></span>'}
+          </div>
+          ${hasDetail ? `<div class="lv-detail">
+            <div class="lv-tabs">${tabs.map((tb, ti) => `<button class="lv-tab${ti === 0 ? " active" : ""}" data-tab="${tb.id}">${esc(tb.label)}</button>`).join("")}</div>
+            ${tabs.map((tb, ti) => `<div class="lv-tab-body${ti === 0 ? " active" : ""}" data-panel="${tb.id}"><ul class="lv-tab-list ${tb.cls}">${tb.items.map(t => `<li>${esc(t)}</li>`).join("")}</ul></div>`).join("")}
+          </div>` : ""}
+        </div>`;
+      });
+      html += `</div></div>`;
+    });
+    html += `</div>`;
+    listview.innerHTML = html;
+
+    document.getElementById("lvClose").addEventListener("click", toggleListView);
+    listview.querySelectorAll("[data-expand]").forEach(row => {
+      row.addEventListener("click", () => row.parentElement.classList.toggle("expanded"));
+    });
+    listview.querySelectorAll(".lv-tabs").forEach(tabBar => {
+      tabBar.addEventListener("click", e => {
+        const btn = e.target.closest(".lv-tab"); if (!btn) return;
+        const detail = tabBar.parentElement;
+        detail.querySelectorAll(".lv-tab").forEach(t => t.classList.toggle("active", t === btn));
+        detail.querySelectorAll(".lv-tab-body").forEach(p => p.classList.toggle("active", p.dataset.panel === btn.dataset.tab));
+      });
+    });
+    document.getElementById("lvDayPicker").addEventListener("click", e => {
+      const btn = e.target.closest(".lv-dpick"); if (!btn) return;
+      const v = btn.dataset.ld;
+      lvDay = v === "all" ? "all" : +v;
+      renderListView();
+    });
+  }
+
+  function closeOtherOverlays(keep) {
+    const pv = document.getElementById("prereqview"), tv = document.getElementById("ticketview");
+    const pb = document.getElementById("prereqToggle"), tb = document.getElementById("ticketToggle");
+    if (keep !== "prereq") { pv.classList.remove("open"); pb.setAttribute("aria-pressed", "false"); }
+    if (keep !== "ticket") { tv.classList.remove("open"); tb.setAttribute("aria-pressed", "false"); }
+    if (keep !== "list" && listOpen) { listOpen = false; listview.classList.remove("open"); listBtn.setAttribute("aria-pressed", "false"); }
+  }
+
+  function toggleListView() {
+    listOpen = !listOpen;
+    listBtn.setAttribute("aria-pressed", String(listOpen));
+    closeOtherOverlays("list");
+    if (listOpen) {
+      lvDay = sel === "all" ? "all" : sel;
+      renderListView();
+      listview.classList.add("open");
+      listview.scrollTop = 0;
+    } else {
+      listview.classList.remove("open");
+    }
+  }
+  listBtn.addEventListener("click", toggleListView);
+
+  /* ============================================================ prereq + ticket summary views */
+  const prereqview = document.getElementById("prereqview");
+  const ticketview = document.getElementById("ticketview");
+  const prereqBtn = document.getElementById("prereqToggle");
+  const ticketBtn = document.getElementById("ticketToggle");
+
+  const CHECKS_KEY = "jiangnan-checks";
+  function loadChecks() { try { return JSON.parse(localStorage.getItem(CHECKS_KEY)) || {}; } catch (e) { return {}; } }
+  function saveChecks(c) { try { localStorage.setItem(CHECKS_KEY, JSON.stringify(c)); } catch (e) {} }
+
+  const tickSvg = '<svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5L6.5 11.5L12.5 5"/></svg>';
+
+  function renderSummaryView(container, data, title, storePrefix) {
+    const closeIcon = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" width="16" height="16"><path d="M4 4l8 8M12 4l-8 8"/></svg>';
+    const checks = loadChecks();
+    let html = `<div class="lv-topbar">
+      <div class="lv-topbar-inner">
+        <h2>${esc(title)}</h2>
+        <button class="lv-close sv-close" aria-label="Close">${closeIcon}</button>
+      </div>
+    </div>
+    <div class="listview-inner">`;
+
+    let totalItems = 0;
+    days.forEach((day, di) => {
+      const items = [];
+      day.stops.forEach((s, si) => {
+        const entries = data[di] && data[di][si] && data[di][si].length ? data[di][si] : null;
+        if (entries) items.push({ s, si, entries });
+      });
+      if (!items.length) return;
+      totalItems += items.length;
+      html += `<div class="lv-day" data-day="${di}">
+        <div class="lv-day-head">
+          <span class="lv-dot" style="background:${day.color};box-shadow:0 0 8px ${day.color}"></span>
+          <span class="lv-dtitle"><b>${esc(day.label)} — ${esc(day.title)}</b><span>${esc(day.date)}</span></span>
+        </div>
+        <div class="sv-items">`;
+      items.forEach(({ s, si, entries }) => {
+        html += `<div class="sv-item"><span class="lv-time">${esc(s.t || "—")}</span><span class="sv-stop">${esc(s.n)}${s.zh ? `<small>${esc(s.zh)}</small>` : ""}</span></div>`;
+        entries.forEach((e, ei) => {
+          const key = `${storePrefix}_${di}_${si}_${ei}`;
+          const done = checks[key] ? " done" : "";
+          html += `<div class="sv-entry${done}" data-ck="${key}"><span class="sv-check">${tickSvg}</span><span class="sv-text">${esc(e)}</span></div>`;
+        });
+      });
+      html += `</div></div>`;
+    });
+    if (!totalItems) html += `<div class="sv-none">No items for this trip.</div>`;
+    html += `</div>`;
+    container.innerHTML = html;
+
+    container.querySelector(".sv-close").addEventListener("click", () => {
+      container.classList.remove("open");
+      if (container === prereqview) prereqBtn.setAttribute("aria-pressed", "false");
+      else ticketBtn.setAttribute("aria-pressed", "false");
+    });
+    container.addEventListener("click", e => {
+      const entry = e.target.closest(".sv-entry"); if (!entry) return;
+      const key = entry.dataset.ck; if (!key) return;
+      entry.classList.toggle("done");
+      const c = loadChecks();
+      if (entry.classList.contains("done")) c[key] = 1; else delete c[key];
+      saveChecks(c);
+    });
+  }
+
+  prereqBtn.addEventListener("click", () => {
+    const opening = !prereqview.classList.contains("open");
+    closeOtherOverlays("prereq");
+    prereqBtn.setAttribute("aria-pressed", String(opening));
+    if (opening) {
+      renderSummaryView(prereqview, PREREQS, "Pre-requisites", "bullet");
+      prereqview.classList.add("open");
+      prereqview.scrollTop = 0;
+    } else {
+      prereqview.classList.remove("open");
+    }
+  });
+
+  ticketBtn.addEventListener("click", () => {
+    const opening = !ticketview.classList.contains("open");
+    closeOtherOverlays("ticket");
+    ticketBtn.setAttribute("aria-pressed", String(opening));
+    if (opening) {
+      renderSummaryView(ticketview, TICKETS, "Tickets & Entry", "ticket");
+      ticketview.classList.add("open");
+      ticketview.scrollTop = 0;
+    } else {
+      ticketview.classList.remove("open");
+    }
+  });
 })();
 </script>
 
