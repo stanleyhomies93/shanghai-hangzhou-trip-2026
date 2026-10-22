@@ -307,6 +307,17 @@
   .lv-day-head .lv-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
   .lv-day-head .lv-dtitle { flex: 1; min-width: 0; }
   .lv-day-head .lv-dtitle b { font-family: var(--display); font-weight: 600; font-size: 16px; display: block; }
+  .weather-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); font-family: var(--mono); margin-left: 6px; }
+  .weather-pill .w-icon { font-style: normal; font-size: 14px; }
+  .weather-pill .w-hi { color: var(--text); font-weight: 500; }
+  .weather-pill .w-lo { opacity: .65; }
+  .weather-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; color: var(--muted); font-family: var(--mono); white-space: nowrap; }
+  .weather-badge .w-icon { font-style: normal; font-size: 13px; }
+  .weather-badge .w-hi { color: var(--text); }
+  .panel-weather { display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 12.5px; color: var(--muted); font-family: var(--mono); }
+  .panel-weather .w-icon { font-size: 18px; }
+  .panel-weather .w-hi { color: var(--text); font-weight: 600; font-size: 14px; }
+  .panel-weather .w-desc { font-family: var(--ui); color: var(--muted); }
   .lv-day-head .lv-dtitle span { font-size: 12.5px; color: var(--muted); }
   .lv-day + .lv-day { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 4px; }
   .lv-stops { padding: 0 0 8px; }
@@ -419,18 +430,29 @@
   "use strict";
 
   /* ============================================================ data */
+  const WEATHER = [
+    { icon: "⛅", desc: "Warm, light showers", hi: 26, lo: 22, rain: 10 },
+    { icon: "🌤️", desc: "Mostly sunny, mild", hi: 24, lo: 19, rain: 1 },
+    { icon: "🌤️", desc: "Sunny, cool breeze", hi: 21, lo: 16, rain: 0 },
+    { icon: "☀️", desc: "Clear and dry", hi: 19, lo: 15, rain: 0 },
+    { icon: "☀️", desc: "Sunny, pleasant", hi: 22, lo: 14, rain: 0 },
+    { icon: "🌤️", desc: "Partly cloudy", hi: 18, lo: 17, rain: 0 },
+    { icon: "🌤️", desc: "Mild, light clouds", hi: 22, lo: 17, rain: 2 },
+  ];
+
   const PLAN = [
     { id: "d1", label: "Day 1", short: "1", date: "Sun 25 Oct", title: "Afternoon arrival · Bund by night", color: "#E2C08A", stops: [
       { t: "12:25", n: "Pudong Airport", zh: "浦东国际机场", city: "上海", k: "transit", note: "Land on Shanghai Airlines direct from KUL (07:05). Allow about an hour for immigration and bags.", lat: 31.1500, lon: 121.8020 },
       { t: "13:30", n: "Car to Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "About 60 min. Pre-book a car or use DiDi.", lat: 31.2468, lon: 121.4935, via: "car" },
       { t: "14:30", n: "Hyatt on the Bund · check in", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Standard check-in is 15:00; ask for early check-in.", lat: 31.2468, lon: 121.4935 },
+      { t: "14:45", n: "Huxi Old Lane Noodles · lunch", zh: "沪西老弄堂面馆（广东路店）", city: "上海", k: "food", note: "10 min walk from hotel. Try 辣肉面 (spicy pork noodles) or 葱油拌面 (scallion oil noodles). About ¥40/person. Alipay / WeChat Pay.", lat: 31.2370, lon: 121.4830 },
       { t: "16:00", n: "The Peninsula · afternoon tea", zh: "上海半岛酒店", city: "上海", k: "food", note: "The Lobby, 5 min walk over Waibaidu Bridge. Sundays are busy; reserve ahead.", lat: 31.2425, lon: 121.4905 },
       { t: "17:15", n: "The Bund at dusk", zh: "外滩", city: "上海", k: "sight", note: "Walk the promenade as Pudong's skyline lights come on.", lat: 31.2385, lon: 121.4912 },
       { t: "18:00", n: "Nanjing Road East", zh: "南京东路步行街", city: "上海", k: "sight", note: "Best under its neon at night. Walk west toward People's Square.", lat: 31.2376, lon: 121.4790 },
       { t: "18:45", n: "Yang's Fry-Dumpling · Huanghe Road", zh: "小杨生煎（黄河路店）", city: "上海", k: "food", note: "Light dinner: shengjianbao, about ¥8 for four. Bite a small hole first; the soup is scalding.", lat: 31.2383, lon: 121.4700 },
       { t: "19:30", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Taxi back, early night.", lat: 31.2468, lon: 121.4935, via: "car" }
     ]},
-    { id: "d2", label: "Day 2", short: "2", date: "Mon 26 Oct", title: "French Concession, old lanes and the skyline", color: "#EA93AA", stops: [
+    { id: "d2", label: "Day 2", short: "2", date: "Mon 26 Oct", title: "French Concession, Yu Garden and the skyline", color: "#EA93AA", stops: [
       { t: "08:15", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Short taxi to breakfast.", lat: 31.2468, lon: 121.4935 },
       { t: "08:30", n: "De Xing Guan · breakfast", zh: "德兴馆（广东路）", city: "上海", k: "food", note: "Noodle house since 1878, in the 2026 Michelin Guide. Three-treasure soup noodles. Alipay/WeChat Pay only.", lat: 31.2347, lon: 121.4795, via: "car" },
       { t: "09:45", n: "Wukang Mansion", zh: "武康大楼", city: "上海", k: "sight", note: "About 20 min by car. Stroll Wukang Road under the plane trees.", lat: 31.2046, lon: 121.4378, via: "car" },
@@ -438,21 +460,23 @@
       { t: "12:00", n: "Ren He Guan · lunch", zh: "人和馆（肇嘉浜路）", city: "上海", k: "food", note: "One Michelin star. Crabmeat and roe over rice, fried eel with water bamboo. Book +86 21 6403 0731 or Meituan.", lat: 31.2045, lon: 121.4595, via: "car" },
       { t: "13:30", n: "Tianzifang", zh: "田子坊", city: "上海", k: "sight", note: "Shikumen lanes with small shops and cafés.", lat: 31.2080, lon: 121.4690 },
       { t: "14:30", n: "Xintiandi", zh: "新天地", city: "上海", k: "sight", note: "Coffee stop.", lat: 31.2195, lon: 121.4750, via: "car" },
-      { t: "15:30", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Rest.", lat: 31.2468, lon: 121.4935, via: "car" },
+      { t: "15:15", n: "Yu Garden & City God Temple bazaar", zh: "豫园 · 城隍庙", city: "上海", k: "sight", note: "¥30. Afternoon is less crowded than morning. Graze the bazaar — grab Nanxiang xiaolongbao as a snack.", lat: 31.2268, lon: 121.4925, via: "car" },
       { t: "16:30", n: "Shanghai Tower · 118F", zh: "上海中心大厦", city: "上海", k: "sight", note: "¥180 per person, passport needed. Sunset around 17:15. Allow 1–1.5 hours.", lat: 31.2355, lon: 121.5055, via: "car" },
       { t: "18:30", n: "Yi Long Court · dinner", zh: "逸龙阁 · 上海半岛酒店", city: "上海", k: "food", note: "Michelin-starred Cantonese at The Peninsula.", lat: 31.2425, lon: 121.4905, via: "car" },
       { t: "20:30", n: "Huangpu night cruise", zh: "十六铺码头", city: "上海", k: "show", note: "About 50 min, ¥135 per person.", lat: 31.2285, lon: 121.4990, via: "car" },
       { t: "21:30", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "", lat: 31.2468, lon: 121.4935, via: "car" }
     ]},
-    { id: "d3", label: "Day 3", short: "3", date: "Tue 27 Oct", title: "Yu Garden, xiaolongbao and the museum", color: "#74D3B8", stops: [
-      { t: "08:15", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Short taxi to breakfast.", lat: 31.2468, lon: 121.4935 },
-      { t: "08:30", n: "Da Hu Chun · breakfast", zh: "大壶春（四川中路）", city: "上海", k: "food", note: "Michelin Bib Gourmand. Fresh pork shengjian (鲜肉生煎) and mini wontons.", lat: 31.2372, lon: 121.4868, via: "car" },
-      { t: "09:15", n: "Yu Garden & City God Temple bazaar", zh: "豫园 · 城隍庙", city: "上海", k: "sight", note: "Garden opens 09:00, ¥30. Go early, then graze the bazaar.", lat: 31.2268, lon: 121.4925 },
-      { t: "11:30", n: "Nanxiang Steamed Bun Restaurant", zh: "南翔馒头店", city: "上海", k: "food", note: "Lunch: classic xiaolongbao, inside the bazaar.", lat: 31.2277, lon: 121.4914 },
-      { t: "13:00", n: "Shanghai Museum", zh: "上海博物馆（人民广场）", city: "上海", k: "sight", note: "Free. Reserve on WeChat (上海博物馆) or show your passport at the visitor centre. About 2 hours.", lat: 31.2285, lon: 121.4755, via: "car" },
-      { t: "15:30", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Rest and pack. Car leaves at 08:00 tomorrow.", lat: 31.2468, lon: 121.4935, via: "car" },
-      { t: "18:00", n: "Fu 1015 · dinner", zh: "福1015（愚园路）", city: "上海", k: "food", note: "Michelin-starred Shanghainese in a garden villa. Hairy crab in season. Book ahead.", lat: 31.2215, lon: 121.4251, via: "car" },
-      { t: "20:30", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Optional last stroll on the Bund.", lat: 31.2468, lon: 121.4935, via: "car" }
+    { id: "d3", label: "Day 3", short: "3", date: "Tue 27 Oct", title: "Museum, Jing'an and last night in Shanghai", color: "#74D3B8", stops: [
+      { t: "07:45", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Leaving a bit earlier to squeeze in two breakfast stops.", lat: 31.2468, lon: 121.4935 },
+      { t: "08:00", n: "Dingxing Road egg pancake", zh: "定兴路蛋饼摊", city: "上海", k: "food", note: "Famous street-stall soft egg pancake (蛋饼), ¥7 each. 330 m from People's Square Exit 8. Opens 05:30, grab and go.", lat: 31.2354, lon: 121.4715, via: "car" },
+      { t: "08:25", n: "Da Hu Chun · breakfast", zh: "大壶春（四川中路）", city: "上海", k: "food", note: "Michelin Bib Gourmand. Fresh pork shengjian (鲜肉生煎) and mini wontons. 10 min walk from the egg pancake stall.", lat: 31.2372, lon: 121.4868 },
+      { t: "09:30", n: "Shanghai Museum", zh: "上海博物馆（人民广场）", city: "上海", k: "sight", note: "Free. Reserve on WeChat (上海博物馆) or show your passport at the visitor centre. About 2 hours.", lat: 31.2285, lon: 121.4755, via: "car" },
+      { t: "12:00", n: "Nanjing Road West", zh: "南京西路", city: "上海", k: "sight", note: "Upscale shopping stretch — different vibe from the neon pedestrian strip on Day 1. Browse or grab a coffee.", lat: 31.2288, lon: 121.4545 },
+      { t: "13:00", n: "Jing'an Temple", zh: "静安寺", city: "上海", k: "sight", note: "¥50. Golden Buddhist temple in the heart of the city. Quick 30–45 min visit.", lat: 31.2238, lon: 121.4458 },
+      { t: "14:00", n: "Julu Road & surrounds", zh: "巨鹿路", city: "上海", k: "sight", note: "Leafy lane with vintage shops, indie cafés and photo-worthy doorways. Walk toward Changshu Road area.", lat: 31.2212, lon: 121.4488 },
+      { t: "15:30", n: "1933 Old Millfun", zh: "1933老场坊", city: "上海", k: "sight", note: "Brutalist former slaughterhouse turned creative space. Free entry, cool architecture. Near the hotel area.", lat: 31.2520, lon: 121.4910, via: "car" },
+      { t: "18:00", n: "Fu 1015 · dinner", zh: "福1015（愚园路）", city: "上海", k: "food", note: "Michelin-starred Shanghainese in a garden villa. Hairy crab in season. Book ahead. On Yuyuan Road in the Jing'an area.", lat: 31.2215, lon: 121.4251, via: "car" },
+      { t: "20:30", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Last night in Shanghai. Pack for Suzhou/Hangzhou — car leaves at 08:00.", lat: 31.2468, lon: 121.4935, via: "car" }
     ]},
     { id: "d4", label: "Day 4", short: "4", date: "Wed 28 Oct", title: "Suzhou gardens on the way to Hangzhou", color: "#86AEFF", stops: [
       { t: "07:30", n: "Hyatt on the Bund · breakfast & check out", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Breakfast at the hotel, check out.", lat: 31.2468, lon: 121.4935 },
@@ -464,15 +488,14 @@
       { t: "15:00", n: "Shantang Street", zh: "七里山塘", city: "苏州", k: "sight", note: "Quick look at the old canal street.", lat: 31.3195, lon: 120.6030 },
       { t: "15:45", n: "Drive to Hangzhou", zh: "苏州 → 杭州", city: "苏州", k: "transit", note: "About 2 hours.", lat: 31.3195, lon: 120.6030 },
       { t: "18:00", n: "Grand Hotel Hangzhou · check in", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Ask for a lake-view room.", lat: 30.2497, lon: 120.1652, via: "car" },
-      { t: "19:00", n: "Hefang Street snack crawl", zh: "河坊街 + 高银街", city: "杭州", k: "food", note: "Congbao hui'er 葱包桧儿, dingsheng cake 定胜糕, stinky tofu, lotus-root starch 西湖藕粉. Wang Runxing 王润兴 for a sit-down dish.", lat: 30.2425, lon: 120.1705 }
+      { t: "19:00", n: "West Lake No. 1 · dinner", zh: "西湖一号", city: "杭州", k: "food", note: "Dinner at 西湖一号 on Wansong Ling Road, near the south shore of West Lake. Scenic lakeside location.", lat: 30.2390, lon: 120.1600, via: "car" }
     ]},
     { id: "d5", label: "Day 5", short: "5", date: "Thu 29 Oct", title: "Temples, tea hills and the lake show", color: "#BBA2FF", stops: [
       { t: "07:30", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Breakfast at the hotel.", lat: 30.2497, lon: 120.1652 },
       { t: "08:30", n: "Lingyin Temple & Feilai Feng", zh: "灵隐寺 · 飞来峰", city: "杭州", k: "sight", note: "Reserve 1–7 days ahead. About 2.5 hours.", lat: 30.2413, lon: 120.1013, via: "car" },
       { t: "11:30", n: "Longjing Manor · lunch", zh: "龙井草堂", city: "杭州", k: "food", note: "Michelin-starred, set menus about ¥700–750 per person. Book ahead; mobile payment only.", lat: 30.2250, lon: 120.1218 },
       { t: "14:00", n: "Meijiawu tea terraces · photoshoot", zh: "梅家坞茶园", city: "杭州", k: "sight", note: "Tea tasting and a 1–2 hour photographer (旅拍). Search 龙井茶园旅拍 on Xiaohongshu or Dianping.", lat: 30.2043, lon: 120.1105 },
-      { t: "16:30", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Rest before dinner.", lat: 30.2497, lon: 120.1652, via: "car" },
-      { t: "17:30", n: "Jin Sha · Four Seasons", zh: "金沙厅 · 杭州西子湖四季酒店", city: "杭州", k: "food", note: "Michelin-starred dinner, north shore.", lat: 30.2598, lon: 120.1375 },
+      { t: "17:30", n: "Jin Sha · Four Seasons", zh: "金沙厅 · 杭州西子湖四季酒店", city: "杭州", k: "food", note: "Michelin-starred dinner, north shore. Head straight from the tea terraces.", lat: 30.2598, lon: 120.1375, via: "car" },
       { t: "19:40", n: "Enduring Memories of Hangzhou", zh: "最忆是杭州（岳湖）", city: "杭州", k: "show", note: "Zhang Yimou's show on the lake. Book tickets.", lat: 30.2593, lon: 120.1412 },
       { t: "21:00", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "", lat: 30.2497, lon: 120.1652, via: "car" }
     ]},
@@ -484,8 +507,7 @@
       { t: "11:00", n: "Leifeng Pagoda", zh: "雷峰塔", city: "杭州", k: "sight", note: "Views over the south lake.", lat: 30.2313, lon: 120.1490 },
       { t: "12:30", n: "Louwailou · lunch", zh: "楼外楼（孤山）", city: "杭州", k: "food", note: "Since 1848. West Lake vinegar fish, Dongpo pork, Longjing shrimp.", lat: 30.2530, lon: 120.1455, via: "car" },
       { t: "14:00", n: "Bai Causeway & Broken Bridge", zh: "白堤 · 断桥", city: "杭州", k: "sight", note: "Walk off lunch along the causeway.", lat: 30.2598, lon: 120.1560 },
-      { t: "15:00", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Rest.", lat: 30.2497, lon: 120.1652 },
-      { t: "16:00", n: "Xixi National Wetland Park", zh: "西溪国家湿地公园", city: "杭州", k: "sight", note: "About 25 min by car. Electric boat as the light drops (sunset about 17:20).", lat: 30.2725, lon: 120.0660, via: "car" },
+      { t: "15:30", n: "Xixi National Wetland Park", zh: "西溪国家湿地公园", city: "杭州", k: "sight", note: "About 25 min by car from Bai Causeway. Electric boat as the light drops (sunset about 17:20).", lat: 30.2725, lon: 120.0660, via: "car" },
       { t: "18:00", n: "Xin Rong Ji · dinner", zh: "新荣记（西溪）", city: "杭州", k: "food", note: "Michelin-starred Taizhou seafood. Try the yellow croaker.", lat: 30.2750, lon: 120.0760 },
       { t: "20:30", n: "Grand Hotel Hangzhou", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "", lat: 30.2497, lon: 120.1652, via: "car" }
     ]},
@@ -546,6 +568,7 @@
       ["Download DiDi app and top up Alipay / WeChat Pay before landing", "Have passport and hotel address screenshot ready for immigration", "Get a local SIM or activate eSIM at the airport", "Withdraw some cash — small notes for tips and street food"],
       ["Pre-book car on DiDi or arrange hotel transfer", "Save hotel address in Chinese: 上海外滩茂悦大酒店 黄浦路199号"],
       ["Request early check-in (standard is 15:00)", "Ask for a river-view room upgrade", "Collect hotel business card in Chinese for taxis back"],
+      ["10 min walk from hotel via Huangpu Road", "Try 辣肉面 (spicy pork noodles) or 葱油拌面 (scallion oil noodles)", "Also good: 蛤蜊猪肝面 (clam & pork liver noodles) and 炸猪排 (fried pork chop)", "Alipay / WeChat Pay — about ¥40/person"],
       ["Reserve The Lobby afternoon tea: +86 21 2327 2888", "Dress code: smart casual", "5 min walk over Waibaidu Bridge from hotel"],
       ["Arrive before 17:30 for golden-hour photos", "Best angle: near the Customs House clock tower", "Pudong skyline lights come on around 18:00"],
       ["Walk the pedestrian section west toward People's Square", "Watch for tourist scams — politely decline tea-ceremony invitations"],
@@ -560,7 +583,7 @@
       ["Book ahead: +86 21 6403 0731 or Meituan app", "One Michelin star — Shanghainese home-style", "Must-order: 蟹粉拌饭 (crabmeat roe rice) and fried eel with water bamboo"],
       ["Enter from Taikang Road, Lane 210", "Browse shikumen alleys for local crafts and cafés", "Can get crowded — keep bags close"],
       ["Coffee stop at one of the terrace cafés", "Browse the renovated shikumen heritage area"],
-      [],
+      ["¥30 entry — afternoon is less crowded than morning", "Graze the bazaar for snacks — Nanxiang xiaolongbao, osmanthus rice cake 桂花糕", "City God Temple (城隍庙) is free to enter next to the garden"],
       ["Buy tickets online: ¥180 per person", "Bring passport — required for entry", "Arrive before 16:30 for sunset (around 17:15)", "118F observation deck — world's highest"],
       ["Reserve via The Peninsula concierge or OpenTable", "Michelin-starred Cantonese", "Dress code: smart casual, no shorts or flip-flops"],
       ["Board at Shiliupu Wharf 十六铺码头", "About 50 min on the water — ¥135 per person", "Buy tickets at the pier or on Meituan app"],
@@ -568,13 +591,15 @@
     ],
     [ // Day 3
       [],
+      ["Husband-and-wife street stall open from 05:30", "Order the original 蛋饼 (soft egg pancake) — ¥7 each", "Quick grab-and-go, 5 min stop", "330 m from People's Square Metro Exit 8"],
       ["Michelin Bib Gourmand — since 1932", "Order 鲜肉生煎 (pork shengjian) and 小馄饨 (mini wontons)", "Mobile payment only — no cash"],
-      ["Garden opens 09:00, ¥30 entry — go early to beat crowds", "Allow 1–1.5 hours in the garden", "Then graze the City God Temple bazaar outside"],
-      ["Classic xiaolongbao — ground floor is quickest, upper floors have better seating", "Dip in black vinegar with julienned ginger", "Expect a queue at peak lunch — arrive by 11:15"],
       ["Free entry — reserve on WeChat mini-program 上海博物馆", "Or show passport at the visitor centre", "Allow about 2 hours — bronze gallery and ceramics are highlights"],
-      ["Rest and pack — private car leaves at 08:00 tomorrow for Suzhou", "Confirm car pickup with driver tonight"],
-      ["Book ahead — very popular", "Michelin-starred Shanghainese in a 1930s garden villa", "Hairy crab 大闸蟹 is in season (Oct–Nov) — must try", "Also order smoked fish 熏鱼 and braised pork belly"],
-      ["Optional last stroll on the Bund — lights stay on until 22:00"]
+      ["Upscale shopping stretch — PLAZA 66, IAPM Mall", "Different vibe from the neon pedestrian strip on Day 1", "Grab a coffee at any of the specialty cafés along the way"],
+      ["¥50 entry — one of Shanghai's most famous Buddhist temples", "Golden hall and courtyard — about 30–45 min visit", "Right on the Nanjing Road West metro stop (Line 2/7)"],
+      ["Leafy lane with vintage shops and indie cafés", "Great for photos — colourful doorways and old French plane trees", "Walk toward Changshu Road for more boutiques"],
+      ["Free entry — Brutalist 1933 former slaughterhouse turned creative space", "Impressive concrete spiral ramps and bridges", "Near the hotel area — good stop before heading to dinner"],
+      ["Book ahead — very popular", "Michelin-starred Shanghainese in a 1930s garden villa", "Hairy crab 大闸蟹 is in season (Oct–Nov) — must try", "Also order smoked fish 熏鱼 and braised pork belly", "On Yuyuan Road in the Jing'an area — straight from Julu Road"],
+      ["Pack for Suzhou/Hangzhou — car leaves at 08:00 tomorrow", "Confirm car pickup with driver tonight"]
     ],
     [ // Day 4
       ["Breakfast at the hotel buffet", "Check out by 08:00 — bags go in the car", "Same car drives all the way to Hangzhou tonight"],
@@ -586,15 +611,14 @@
       ["Quick walk along the old canal street", "Less touristy than Pingjiang Road — good for photos"],
       ["About 2 hours via G25 expressway to Hangzhou"],
       ["Ask for a lake-view room", "Collect hotel business card in Chinese", "Check if free West Lake boat tour is available tomorrow morning"],
-      ["Street food crawl: 葱包桧儿 congbao hui'er, 定胜糕 dingsheng cake", "Try the stinky tofu 臭豆腐 and lotus-root starch 西湖藕粉", "Wang Runxing 王润兴 for a sit-down dish if still hungry"]
+      ["Dinner at 西湖一号 on Wansong Ling Road, near West Lake south shore", "Scenic lakeside setting — great first-night-in-Hangzhou dinner"]
     ],
     [ // Day 5
       ["Breakfast at the hotel"],
       ["Reserve 1–7 days ahead on WeChat or Meituan", "Entry: ¥75 Feilai Feng park + ¥30 temple", "Allow about 2.5 hours — wear comfortable walking shoes", "Stone carvings at Feilai Feng are the highlight — don't skip"],
       ["Book ahead — Michelin-starred", "Set menus about ¥700–750 per person", "Mobile payment only — no cash", "Try the Longjing shrimp 龙井虾仁 and tea-smoked duck"],
       ["Free to walk the tea terraces — beautiful in late Oct", "Tea tasting at a local family farm — buy fresh Longjing as a souvenir", "Book photographer: search 龙井茶园旅拍 on Xiaohongshu or Dianping", "Allow 1–2 hours for the photo session"],
-      ["Rest and freshen up before dinner"],
-      ["Reserve via Four Seasons concierge — Michelin-starred", "Try the Dongpo pork 东坡肉 and beggar's chicken 叫花鸡", "Smart casual dress code"],
+      ["Reserve via Four Seasons concierge — Michelin-starred", "Head straight from tea terraces — about 25 min by car", "Try the Dongpo pork 东坡肉 and beggar's chicken 叫花鸡", "Smart casual dress code"],
       ["Zhang Yimou's water show on Yue Lake — outdoor, rain or shine", "Book tickets in advance on Damai 大麦 or Maoyan 猫眼", "Bring a light jacket — it's by the water and gets cool at night", "Show starts after sunset — about 70 min — no intermission"],
       []
     ],
@@ -606,8 +630,7 @@
       ["¥40 entry — take the elevator up, walk down", "Panoramic views over the south lake", "Legend of the White Snake origin — read up before visiting"],
       ["Since 1848 — Hangzhou's most famous restaurant", "Must-order: 西湖醋鱼 vinegar fish, 东坡肉 Dongpo pork, 龙井虾仁 Longjing shrimp", "Arrive early or book — gets crowded at noon"],
       ["Walk off lunch along the causeway toward Broken Bridge 断桥", "Legend of the White Snake romance — the bridge where they met", "Good sunset spot if you linger"],
-      [],
-      ["About 25 min by car from hotel", "Take the electric boat ride as the light drops — sunset about 17:20", "¥80 entry includes boat", "Bring mosquito repellent — wetland area"],
+      ["About 25 min by car from Bai Causeway", "Take the electric boat ride as the light drops — sunset about 17:20", "¥80 entry includes boat", "Bring mosquito repellent — wetland area"],
       ["Michelin-starred Taizhou seafood near the wetland", "Must-try: 黄鱼 yellow croaker, done many ways", "Reserve ahead — limited seating"],
       []
     ],
@@ -630,6 +653,7 @@
       ["Set up Alipay and WeChat Pay — link an international card (Visa/Mastercard)", "Download DiDi (ride-hailing) and Meituan (food/tickets)", "Activate China eSIM or buy a SIM plan before departure", "Photocopy passport info page — carry the copy separately", "Save hotel address + key stops in Chinese on your phone"],
       ["Pre-book airport transfer via hotel or DiDi", "Have hotel address in Chinese ready to show the driver"],
       ["Email hotel for early check-in request"],
+      ["No reservation needed — walk-in only", "Save address: 广东路500号 世界贸易大厦1楼"],
       ["Reserve afternoon tea 3–5 days ahead"],
       [],
       [],
@@ -644,7 +668,7 @@
       ["Reserve Ren He Guan 3–5 days ahead: +86 21 6403 0731 or Meituan"],
       [],
       [],
-      [],
+      ["No reservation needed — ¥30 entry at gate or buy on Meituan"],
       ["Buy Shanghai Tower tickets online in advance"],
       ["Reserve Yi Long Court via The Peninsula concierge — at least 3 days ahead"],
       [],
@@ -652,13 +676,15 @@
     ],
     [ // Day 3
       [],
-      [],
-      [],
+      ["No reservation — street stall, first come first served", "Save address: 黄浦区定兴路6号"],
       [],
       ["Reserve Shanghai Museum on WeChat mini-program 上海博物馆 — 1–7 days ahead"],
-      ["Confirm Day 4 private car pickup with driver"],
+      [],
+      [],
+      [],
+      [],
       ["Reserve Fu 1015 at least 3–5 days ahead — very popular"],
-      []
+      ["Confirm Day 4 private car pickup with driver"]
     ],
     [ // Day 4
       [],
@@ -670,14 +696,13 @@
       [],
       [],
       ["Email Grand Hotel Hangzhou for lake-view room request"],
-      []
+      ["Reserve 西湖一号 ahead — call to book a table for 19:00"]
     ],
     [ // Day 5
       [],
       ["Reserve Lingyin Temple on WeChat or Meituan — 1–7 days ahead"],
       ["Reserve Longjing Manor at least 3–5 days ahead"],
       ["Book photographer on Xiaohongshu or Dianping — search 龙井茶园旅拍, book 3+ days ahead"],
-      [],
       ["Reserve Jin Sha via Four Seasons concierge — at least 1 week ahead"],
       ["Buy Enduring Memories show tickets on Damai 大麦 or Maoyan 猫眼 — 1–2 weeks ahead"],
       []
@@ -689,7 +714,6 @@
       [],
       [],
       ["Book Louwailou or arrive before 11:30 to avoid the queue"],
-      [],
       [],
       [],
       ["Reserve Xin Rong Ji at least 3–5 days ahead"],
@@ -714,6 +738,7 @@
       ["Flight: Shanghai Airlines KUL → PVG (07:05–12:25)"],
       [],
       [],
+      ["No ticket needed — pay at counter, about ¥40/person"],
       ["The Peninsula afternoon tea — reserve, no advance ticket needed"],
       [],
       [],
@@ -728,7 +753,7 @@
       [],
       [],
       [],
-      [],
+      ["Yu Garden — ¥30 entry — buy at the gate or Meituan"],
       ["Shanghai Tower 118F observation — ¥180/person — buy online at shang-hai-center.com or Meituan"],
       [],
       ["Huangpu night cruise — ¥135/person — buy at Shiliupu Wharf or Meituan"],
@@ -736,11 +761,13 @@
     ],
     [ // Day 3
       [],
-      [],
-      ["Yu Garden — ¥30 entry — buy at the gate or Meituan"],
+      ["No ticket — street stall, about ¥7 per egg pancake, cash or mobile pay"],
       [],
       ["Shanghai Museum — free — reserve on WeChat 上海博物馆 mini-program"],
       [],
+      ["Jing'an Temple — ¥50 — buy at the gate"],
+      [],
+      ["1933 Old Millfun — free entry"],
       [],
       []
     ],
@@ -762,7 +789,6 @@
       [],
       [],
       [],
-      [],
       ["Enduring Memories of Hangzhou — ¥300–600/person — Damai 大麦 or Maoyan 猫眼 app"],
       []
     ],
@@ -772,7 +798,6 @@
       [],
       [],
       ["Leifeng Pagoda — ¥40 — buy at the gate or Meituan"],
-      [],
       [],
       [],
       ["Xixi Wetland Park — ¥80 (includes boat) — buy at the gate or Meituan"],
@@ -841,6 +866,11 @@
   }
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const shortName = n => n.length > 34 ? n.slice(0, 32) + "…" : n;
+  const weatherHTML = (i, mode) => { const w = WEATHER[i]; if (!w) return "";
+    if (mode === "panel") return `<div class="panel-weather"><span class="w-icon">${w.icon}</span><span class="w-hi">${w.hi}°</span><span class="w-lo">/ ${w.lo}°C</span><span class="w-desc">${esc(w.desc)}${w.rain ? ` · ${w.rain}mm` : ""}</span></div>`;
+    if (mode === "badge") return `<span class="weather-badge"><span class="w-icon">${w.icon}</span><span class="w-hi">${w.hi}°</span><span class="w-lo">/${w.lo}°</span></span>`;
+    return `<span class="weather-pill"><span class="w-icon">${w.icon}</span><span class="w-hi">${w.hi}°</span><span class="w-lo">/ ${w.lo}°C</span></span>`;
+  };
   const easeInOut = u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
   const easeOut = u => 1 - Math.pow(1 - u, 3);
   const backOut = u => { const c1 = 1.9, c3 = c1 + 1; return u >= 1 ? 1 : 1 + c3 * Math.pow(u - 1, 3) + c1 * Math.pow(u - 1, 2); };
@@ -1416,7 +1446,7 @@
       body.innerHTML = days.map((d, i) => `
         <button class="dayrow" data-d="${i}" style="--c:${d.color};--i:${i}">
           <span class="badge">${esc(d.short)}</span>
-          <span class="t"><b>${esc(d.title)}</b><span>${esc(d.date)} · ${d.stops.length} stops</span></span>
+          <span class="t"><b>${esc(d.title)}</b><span>${esc(d.date)} · ${d.stops.length} stops ${weatherHTML(i, "badge")}</span></span>
           <span class="km">${fmtKm(dayKm(d))}</span>
         </button>`).join("");
       foot.innerHTML = `
@@ -1427,6 +1457,7 @@
       head.innerHTML = `
         <div class="row"><span class="daytag">${esc(day.label)}</span><span class="date">${esc(day.date)}</span></div>
         <h2>${esc(day.title)}</h2>
+        ${weatherHTML(sel, "panel")}
         <div class="stats-row">
           <div class="stats">
             <div class="stat"><b data-n="${day.stops.length}">${day.stops.length}</b><span>Stops</span></div>
@@ -1840,7 +1871,7 @@
       </div>
       <div class="lv-daypicker" id="lvDayPicker">
         <button class="lv-dpick${lvDay === "all" ? " active" : ""}" data-ld="all" style="--c:#d8b67a"><span class="lv-dp-dot" style="background:#d8b67a"></span>All</button>
-        ${days.map((d, i) => `<button class="lv-dpick${lvDay === i ? " active" : ""}" data-ld="${i}" style="--c:${d.color}"><span class="lv-dp-dot" style="background:${d.color}"></span>${esc(d.short)}<small>${esc(d.date.split(" ").slice(1).join(" "))}</small></button>`).join("")}
+        ${days.map((d, i) => `<button class="lv-dpick${lvDay === i ? " active" : ""}" data-ld="${i}" style="--c:${d.color}"><span class="lv-dp-dot" style="background:${d.color}"></span>${esc(d.short)}<small>${WEATHER[i] ? WEATHER[i].icon : ""} ${esc(d.date.split(" ").slice(1).join(" "))}</small></button>`).join("")}
       </div>
     </div>`;
 
@@ -1850,7 +1881,7 @@
       html += `<div class="lv-day" data-day="${di}">
         <div class="lv-day-head">
           <span class="lv-dot" style="background:${day.color};box-shadow:0 0 8px ${day.color}"></span>
-          <span class="lv-dtitle"><b>${esc(day.label)} — ${esc(day.title)}</b><span>${esc(day.date)} · ${day.stops.length} stops · ${fmtKm(dayKm(day))}</span></span>
+          <span class="lv-dtitle"><b>${esc(day.label)} — ${esc(day.title)}</b><span>${esc(day.date)} · ${day.stops.length} stops · ${fmtKm(dayKm(day))} ${weatherHTML(di, "pill")}</span></span>
         </div>
         <div class="lv-stops">`;
       day.stops.forEach((s, si) => {
@@ -1963,7 +1994,7 @@
       html += `<div class="lv-day" data-day="${di}">
         <div class="lv-day-head">
           <span class="lv-dot" style="background:${day.color};box-shadow:0 0 8px ${day.color}"></span>
-          <span class="lv-dtitle"><b>${esc(day.label)} — ${esc(day.title)}</b><span>${esc(day.date)}</span></span>
+          <span class="lv-dtitle"><b>${esc(day.label)} — ${esc(day.title)}</b><span>${esc(day.date)} ${weatherHTML(di, "pill")}</span></span>
         </div>
         <div class="sv-items">`;
       items.forEach(({ s, si, entries }) => {
