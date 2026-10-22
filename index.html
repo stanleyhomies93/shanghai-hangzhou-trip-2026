@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Interactive 3D route map for a Shanghai, Suzhou and Hangzhou trip, 25–31 Oct 2026.">
+<meta name="description" content="Interactive 3D route map for a Shanghai and Hangzhou trip, 25–31 Oct 2026.">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
@@ -383,7 +383,7 @@
   <div class="top">
     <header class="brand glass">
       <div class="eyebrow">Route atlas · 25–31 Oct 2026</div>
-      <h1>Shanghai <i>·</i> Suzhou <i>·</i> Hangzhou</h1>
+      <h1>Shanghai <i>·</i> Hangzhou</h1>
       <p>7 days · KUL → PVG · Shanghai Airlines / AirAsia X · HGH → KUL</p>
     </header>
     <nav class="days glass" id="days" aria-label="Filter by day"></nav>
@@ -476,18 +476,16 @@
       { t: "14:00", n: "Julu Road & surrounds", zh: "巨鹿路", city: "上海", k: "sight", note: "Leafy lane with vintage shops, indie cafés and photo-worthy doorways. Walk toward Changshu Road area.", lat: 31.2212, lon: 121.4488 },
       { t: "15:30", n: "1933 Old Millfun", zh: "1933老场坊", city: "上海", k: "sight", note: "Brutalist former slaughterhouse turned creative space. Free entry, cool architecture. Near the hotel area.", lat: 31.2520, lon: 121.4910, via: "car" },
       { t: "18:00", n: "Fu 1015 · dinner", zh: "福1015（愚园路）", city: "上海", k: "food", note: "Michelin-starred Shanghainese in a garden villa. Hairy crab in season. Book ahead. On Yuyuan Road in the Jing'an area.", lat: 31.2215, lon: 121.4251, via: "car" },
-      { t: "20:30", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Last night in Shanghai. Pack for Suzhou/Hangzhou — car leaves at 08:00.", lat: 31.2468, lon: 121.4935, via: "car" }
+      { t: "20:30", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Last night in Shanghai. Pack for Hangzhou — car leaves at 08:00.", lat: 31.2468, lon: 121.4935, via: "car" }
     ]},
-    { id: "d4", label: "Day 4", short: "4", date: "Wed 28 Oct", title: "Suzhou gardens on the way to Hangzhou", color: "#86AEFF", stops: [
+    { id: "d4", label: "Day 4", short: "4", date: "Wed 28 Oct", title: "Shanghai to Hangzhou, Hefang Street and the lake shore", color: "#86AEFF", stops: [
       { t: "07:30", n: "Hyatt on the Bund · breakfast & check out", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Breakfast at the hotel, check out.", lat: 31.2468, lon: 121.4935 },
-      { t: "08:00", n: "Private car to Suzhou", zh: "上海 → 苏州", city: "上海", k: "transit", note: "About 1.5–2 hours. Same car all the way to Hangzhou; bags in the car.", lat: 31.2468, lon: 121.4935 },
-      { t: "10:00", n: "Humble Administrator's Garden", zh: "拙政园", city: "苏州", k: "sight", note: "¥80. Book a timed ticket on WeChat 苏州园林旅游 from 21 Oct (opens 1–7 days ahead).", lat: 31.3245, lon: 120.6280, via: "car" },
-      { t: "11:30", n: "Suzhou Museum", zh: "苏州博物馆（本馆）", city: "苏州", k: "sight", note: "I. M. Pei building next door. Free; reserve on WeChat 苏州博物馆 from 21 Oct. Last entry 16:00.", lat: 31.3232, lon: 120.6266 },
-      { t: "12:45", n: "Song He Lou · lunch", zh: "松鹤楼（平江路店）", city: "苏州", k: "food", note: "Squirrel-shaped mandarin fish 松鼠桂鱼, shrimp with tea leaves. Walk-in usually fine on a weekday.", lat: 31.3185, lon: 120.6300 },
-      { t: "14:00", n: "Pingjiang Road", zh: "平江路", city: "苏州", k: "sight", note: "Canal-side lane; short rowboat ride (pay at the pier).", lat: 31.3150, lon: 120.6310 },
-      { t: "15:00", n: "Shantang Street", zh: "七里山塘", city: "苏州", k: "sight", note: "Quick look at the old canal street.", lat: 31.3195, lon: 120.6030 },
-      { t: "15:45", n: "Drive to Hangzhou", zh: "苏州 → 杭州", city: "苏州", k: "transit", note: "About 2 hours.", lat: 31.3195, lon: 120.6030 },
-      { t: "18:00", n: "Grand Hotel Hangzhou · check in", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Ask for a lake-view room.", lat: 30.2497, lon: 120.1652, via: "car" },
+      { t: "08:00", n: "Drive to Hangzhou", zh: "上海 → 杭州", city: "上海", k: "transit", note: "About 2.5 hours via G60 expressway. Bags in the car.", lat: 31.2468, lon: 121.4935 },
+      { t: "10:30", n: "Grand Hotel Hangzhou · check in", zh: "杭州大华饭店", city: "杭州", k: "hotel", note: "Ask for a lake-view room. Drop bags and head out.", lat: 30.2497, lon: 120.1652, via: "car" },
+      { t: "11:30", n: "Hefang Street snack crawl", zh: "河坊街 + 高银街", city: "杭州", k: "food", note: "Lunch on the go: 葱包桧儿 congbao hui'er, 定胜糕 dingsheng cake, stinky tofu, lotus-root starch 西湖藕粉. Wang Runxing 王润兴 for a sit-down dish.", lat: 30.2425, lon: 120.1705 },
+      { t: "13:30", n: "Wushan Hill & City God Pavilion", zh: "吴山天风 · 城隍阁", city: "杭州", k: "sight", note: "Walk up from Hefang Street. Hilltop views over West Lake and the city. City God Pavilion ¥30.", lat: 30.2412, lon: 120.1688 },
+      { t: "15:00", n: "Hubin Road lakeside walk", zh: "湖滨路步行街", city: "杭州", k: "sight", note: "Stroll along the east shore of West Lake. Cafés, boutiques and lake views.", lat: 30.2520, lon: 120.1620, via: "car" },
+      { t: "16:30", n: "China National Tea Museum", zh: "中国茶叶博物馆", city: "杭州", k: "sight", note: "Free. Set among Longjing tea plantations. Learn about Chinese tea culture before tomorrow's tea terraces.", lat: 30.2270, lon: 120.1230, via: "car" },
       { t: "19:00", n: "West Lake No. 1 · dinner", zh: "西湖一号", city: "杭州", k: "food", note: "Dinner at 西湖一号 on Wansong Ling Road, near the south shore of West Lake. Scenic lakeside location.", lat: 30.2390, lon: 120.1600, via: "car" }
     ]},
     { id: "d5", label: "Day 5", short: "5", date: "Thu 29 Oct", title: "Temples, tea hills and the lake show", color: "#BBA2FF", stops: [
@@ -599,18 +597,16 @@
       ["Leafy lane with vintage shops and indie cafés", "Great for photos — colourful doorways and old French plane trees", "Walk toward Changshu Road for more boutiques"],
       ["Free entry — Brutalist 1933 former slaughterhouse turned creative space", "Impressive concrete spiral ramps and bridges", "Near the hotel area — good stop before heading to dinner"],
       ["Book ahead — very popular", "Michelin-starred Shanghainese in a 1930s garden villa", "Hairy crab 大闸蟹 is in season (Oct–Nov) — must try", "Also order smoked fish 熏鱼 and braised pork belly", "On Yuyuan Road in the Jing'an area — straight from Julu Road"],
-      ["Pack for Suzhou/Hangzhou — car leaves at 08:00 tomorrow", "Confirm car pickup with driver tonight"]
+      ["Pack for Hangzhou — car leaves at 08:00 tomorrow", "Confirm car pickup with driver tonight"]
     ],
     [ // Day 4
-      ["Breakfast at the hotel buffet", "Check out by 08:00 — bags go in the car", "Same car drives all the way to Hangzhou tonight"],
-      ["About 1.5–2 hours via G2 expressway", "Confirm pickup with driver the night before", "Save Suzhou stops in Chinese on your phone"],
-      ["¥80 entry — book timed ticket on WeChat 苏州园林旅游 from 21 Oct", "Opens 1–7 days ahead — book early, slots sell out", "UNESCO World Heritage Site — allow about 1.5 hours"],
-      ["Free entry — reserve on WeChat 苏州博物馆 from 21 Oct", "I. M. Pei's last major work — stunning architecture", "Last entry 16:00 — plan accordingly"],
-      ["Order 松鼠桂鱼 (squirrel-shaped mandarin fish)", "Also try shrimp with Biluochun tea leaves 碧螺虾仁", "Walk-in usually fine on a weekday"],
-      ["Canal-side lane with teahouses and silk shops", "Short rowboat ride available — pay at the pier", "Pick up Suzhou silk scarves or fans as souvenirs"],
-      ["Quick walk along the old canal street", "Less touristy than Pingjiang Road — good for photos"],
-      ["About 2 hours via G25 expressway to Hangzhou"],
-      ["Ask for a lake-view room", "Collect hotel business card in Chinese", "Check if free West Lake boat tour is available tomorrow morning"],
+      ["Breakfast at the hotel buffet", "Check out by 08:00 — bags go in the car"],
+      ["About 2.5 hours via G60 expressway", "Confirm pickup with driver the night before"],
+      ["Ask for a lake-view room", "Collect hotel business card in Chinese", "Drop bags and head straight out", "Check if free West Lake boat tour is available tomorrow morning"],
+      ["Street food crawl: 葱包桧儿 congbao hui'er, 定胜糕 dingsheng cake", "Try the stinky tofu 臭豆腐 and lotus-root starch 西湖藕粉", "Wang Runxing 王润兴 for a sit-down dish if still hungry"],
+      ["Walk up from the end of Hefang Street — 10 min uphill", "City God Pavilion ¥30 — panoramic views over West Lake", "Clear day = views all the way to the tea hills"],
+      ["Stroll the east shore promenade", "Good coffee stops and lakeside benches", "Apple Store and boutique shopping if you want"],
+      ["Free entry — set among Longjing tea plantations", "Good intro to Chinese tea culture before tomorrow's tea terraces", "Pick up packaged Longjing tea as souvenirs"],
       ["Dinner at 西湖一号 on Wansong Ling Road, near West Lake south shore", "Scenic lakeside setting — great first-night-in-Hangzhou dinner"]
     ],
     [ // Day 5
@@ -689,13 +685,11 @@
     [ // Day 4
       [],
       ["Confirm private car pickup time and driver contact the night before"],
-      ["Book timed ticket on WeChat 苏州园林旅游 — opens 1–7 days before, from 21 Oct"],
-      ["Reserve Suzhou Museum on WeChat 苏州博物馆 — opens 1–7 days before, from 21 Oct"],
-      [],
-      [],
-      [],
-      [],
       ["Email Grand Hotel Hangzhou for lake-view room request"],
+      [],
+      [],
+      [],
+      [],
       ["Reserve 西湖一号 ahead — call to book a table for 19:00"]
     ],
     [ // Day 5
@@ -774,13 +768,11 @@
     [ // Day 4
       [],
       [],
-      ["Humble Administrator's Garden — ¥80 — timed ticket on WeChat 苏州园林旅游"],
-      ["Suzhou Museum — free — reserve on WeChat 苏州博物馆"],
       [],
       [],
+      ["City God Pavilion 城隍阁 — ¥30 — buy at the gate"],
       [],
-      [],
-      [],
+      ["China National Tea Museum — free"],
       []
     ],
     [ // Day 5
@@ -1437,7 +1429,7 @@
       head.style.setProperty("--c", "#d8b67a");
       head.innerHTML = `
         <div class="row"><span class="daytag">Whole trip</span><span class="date">25–31 Oct</span></div>
-        <h2>Shanghai, Suzhou and Hangzhou, one week</h2>
+        <h2>Shanghai and Hangzhou, one week</h2>
         <div class="stats-row"><div class="stats">
           <div class="stat"><b data-n="${days.length}">${days.length}</b><span>Days</span></div>
           <div class="stat"><b data-n="${stops}">${stops}</b><span>Stops</span></div>
