@@ -1523,7 +1523,7 @@
         const leg = legTo.get(i), has = mapped(s); if (has) n++;
         const active = selStop && selStop.d === sel && selStop.i === i;
         const sImg = photoUrl(s);
-        const sThumb = sImg ? `<img class="stop-thumb" src="${sImg}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.remove()" onclick="event.stopPropagation();openLightbox(this.src,'${esc(s.n).replace(/'/g, "\\&#39;")}','${esc(s.zh || "").replace(/'/g, "\\&#39;")}')">` : "";
+        const sThumb = sImg ? `<img class="stop-thumb" src="${sImg}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.remove()" data-lb data-lb-name="${esc(s.n)}" data-lb-zh="${esc(s.zh || "")}">` : "";
         return `${leg ? `<div class="leg" style="--i:${k++}"><b>${fmtKm(leg.d)}</b> · ${MODE[leg.mode]}</div>` : ""}
           <li class="stop${active ? " active" : ""}" data-i="${i}" style="--c:${day.color};--i:${k++}" tabindex="0">
             <span class="num ${s.k === "hotel" ? "hotel" : ""} ${has ? "" : "none"}">${has ? n : "–"}</span>
@@ -1752,7 +1752,7 @@
     const idx = mappedIdx(selStop.d), pos = idx.indexOf(selStop.i);
     const bar = tour ? `<div class="tourbar" style="--dur:${STEP}s">${tour.idx.map((ix, k) => `<i class="${k < tour.cur ? "done" : k === tour.cur ? "now" : ""}"></i>`).join("")}</div>` : "";
     const heroImg = photoUrl(s);
-    const hero = heroImg ? `<img class="card-hero" src="${heroImg}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.remove()" onclick="event.stopPropagation();openLightbox(this.src,'${esc(s.n).replace(/'/g, "\\&#39;")}','${esc(s.zh || "").replace(/'/g, "\\&#39;")}')">` : "";
+    const hero = heroImg ? `<img class="card-hero" src="${heroImg}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.remove()" data-lb data-lb-name="${esc(s.n)}" data-lb-zh="${esc(s.zh || "")}">` : "";
     card.style.setProperty("--c", day.color);
     card.innerHTML = `<button class="icon-btn x" id="cardClose" aria-label="Close">${ICON.del}</button>${hero}
       <div class="card-body">
@@ -1874,10 +1874,17 @@
       <img src="${src}">
       <div class="lb-caption">${esc(name)}${zh ? `<small>${esc(zh)}</small>` : ""}</div>`;
     lightbox.hidden = false;
-    lightbox.querySelector(".lb-close").addEventListener("click", closeLightbox);
-    lightbox.addEventListener("click", e => { if (e.target === lightbox) closeLightbox(); });
   }
   function closeLightbox() { lightbox.hidden = true; lightbox.innerHTML = ""; }
+  lightbox.addEventListener("click", e => {
+    if (e.target.closest(".lb-close") || e.target === lightbox) closeLightbox();
+  });
+  document.addEventListener("click", e => {
+    const img = e.target.closest("[data-lb]");
+    if (!img) return;
+    e.stopPropagation();
+    openLightbox(img.src, img.dataset.lbName, img.dataset.lbZh);
+  });
 
   /* ============================================================ boot */
   resize();
@@ -1969,7 +1976,7 @@
         if (prereqs) tabs.push({ id: "prereq", label: "Pre-requisite", items: prereqs, cls: "bullet" });
         if (tickets) tabs.push({ id: "ticket", label: "Tickets", items: tickets, cls: "ticket" });
         const lvImg = photoUrl(s);
-        const lvThumb = lvImg ? `<img class="lv-thumb" src="${lvImg}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.remove()" onclick="event.stopPropagation();openLightbox(this.src,'${esc(s.n).replace(/'/g, "\\&#39;")}','${esc(s.zh || "").replace(/'/g, "\\&#39;")}')">` : "";
+        const lvThumb = lvImg ? `<img class="lv-thumb" src="${lvImg}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.remove()" data-lb data-lb-name="${esc(s.n)}" data-lb-zh="${esc(s.zh || "")}">` : "";
         html += `<div class="lv-row${hasDetail ? "" : " no-todo"}">
           <div class="lv-row-head" ${hasDetail ? 'data-expand' : ''}>
             <span class="lv-time">${esc(s.t || "—")}</span>
