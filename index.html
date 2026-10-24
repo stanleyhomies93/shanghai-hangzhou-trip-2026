@@ -100,7 +100,7 @@
   .stops { list-style: none; margin: 0; padding: 0; }
   .enter .stop, .enter .leg, .enter .dayrow { animation: rise .6s var(--ease) both; animation-delay: calc(var(--i, 0) * 45ms + 120ms); }
   @keyframes rise { from { opacity: 0; transform: translateY(14px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
-  .stop { display: grid; grid-template-columns: 30px 1fr auto; gap: 10px; align-items: start; padding: 10px 8px; border-radius: 12px; cursor: pointer; transition: background .2s, box-shadow .2s, transform .35s var(--spring); }
+  .stop { display: grid; grid-template-columns: 30px 1fr auto auto; gap: 10px; align-items: start; padding: 10px 8px; border-radius: 12px; cursor: pointer; transition: background .2s, box-shadow .2s, transform .35s var(--spring); }
   .stop:hover { background: rgba(255,255,255,.035); transform: translateX(3px); }
   .stop.active { background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px var(--line-strong); }
   .num { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-family: var(--mono); font-size: 11.5px; font-weight: 500; background: var(--c); color: var(--ink); margin-top: 1px; transition: transform .4s var(--spring), box-shadow .3s; }
@@ -122,6 +122,8 @@
   .icon-btn.del:hover { color: var(--danger); }
   .icon-btn:disabled { opacity: .25; pointer-events: none; }
   .icon-btn svg { width: 14px; height: 14px; }
+  .stop-thumb { width: 36px; height: 36px; border-radius: 6px; object-fit: cover; opacity: 0; transition: opacity .3s; }
+  .stop-thumb.loaded { opacity: 1; }
   .leg { display: flex; align-items: center; gap: 8px; margin: -2px 0 -2px 22px; padding: 2px 0 2px 14px; border-left: 1px dashed var(--line-strong); font-family: var(--mono); font-size: 11px; color: var(--faint); min-height: 20px; }
   .leg b { color: var(--muted); font-weight: 500; }
 
@@ -169,10 +171,13 @@
   @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(216,182,122,.6); } 100% { box-shadow: 0 0 0 12px rgba(216,182,122,0); } }
   @keyframes drop { from { opacity: 0; transform: translate(-50%, -16px) scale(.94); } }
 
-  .card { position: absolute; left: 0; top: 0; z-index: 5; box-sizing: border-box; width: 300px; max-width: calc(100vw - 32px); border-radius: 16px; padding: 14px 16px; background: var(--glass-strong); pointer-events: auto; will-change: transform; }
+  .card { position: absolute; left: 0; top: 0; z-index: 5; box-sizing: border-box; width: 300px; max-width: calc(100vw - 32px); border-radius: 16px; padding: 0; background: var(--glass-strong); pointer-events: auto; will-change: transform; overflow: hidden; }
+  .card-body { padding: 14px 16px; }
+  .card-hero { width: 100%; height: 140px; object-fit: cover; display: block; opacity: 0; transition: opacity .3s; }
+  .card-hero.loaded { opacity: 1; }
   .card.pop { animation: pop .55s var(--spring) both; }
   @keyframes pop { from { opacity: 0; scale: .86; filter: blur(6px); } to { opacity: 1; scale: 1; filter: none; } }
-  .card .x { position: absolute; top: 8px; right: 8px; }
+  .card .x { position: absolute; top: 8px; right: 8px; z-index: 1; background: var(--glass); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-radius: 50%; }
   .card .daytag { margin-bottom: 6px; }
   .card h3 { margin: 0 26px 2px 0; font-family: var(--display); font-weight: 600; font-size: 18.5px; line-height: 1.2; letter-spacing: -.015em; }
   .card .zh { font-size: 15px; color: var(--text); margin: 2px 0 6px; user-select: all; }
@@ -324,14 +329,16 @@
   .lv-time { font-family: var(--mono); font-size: 12.5px; color: var(--muted); padding-top: 2px; }
   .lv-name { font-weight: 600; font-size: 14.5px; line-height: 1.35; }
   .lv-name .lv-zh { display: block; font-weight: 400; font-family: var(--zh); font-size: 12.5px; color: var(--muted); margin-top: 1px; }
+  .lv-thumb { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; opacity: 0; transition: opacity .3s; }
+  .lv-thumb.loaded { opacity: 1; }
   .lv-leg { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; padding: 6px 0 6px 20px; font-family: var(--mono); font-size: 11px; color: var(--faint); }
   .lv-leg::before { content: ""; width: 12px; border-top: 1px dashed var(--line-strong); }
   .lv-row { border-top: 1px solid var(--line); }
   .lv-row:first-child { border-top: 0; }
-  .lv-row-head { display: grid; grid-template-columns: 54px 1fr 28px; gap: 4px 12px; padding: 10px 0; align-items: start; -webkit-user-select: none; user-select: none; }
+  .lv-row-head { display: grid; grid-template-columns: 54px 1fr auto 28px; gap: 4px 12px; padding: 10px 0; align-items: start; -webkit-user-select: none; user-select: none; }
   .lv-row-head[data-expand] { cursor: pointer; }
   .lv-row-head[data-expand]:hover { background: rgba(128,128,128,.04); margin: 0 -8px; padding-left: 8px; padding-right: 8px; border-radius: 8px; }
-  .lv-chevron { grid-column: 3; grid-row: 1; width: 28px; height: 28px; display: grid; place-items: center; color: var(--faint); transition: transform .25s var(--ease); margin-top: -2px; }
+  .lv-chevron { grid-column: 4; grid-row: 1; width: 28px; height: 28px; display: grid; place-items: center; color: var(--faint); transition: transform .25s var(--ease); margin-top: -2px; }
   .lv-chevron svg { width: 14px; height: 14px; }
   .lv-row.expanded .lv-chevron { transform: rotate(90deg); }
   .lv-detail { display: none; padding: 0 0 10px 66px; }
@@ -369,7 +376,7 @@
     .lv-topbar-inner h2 { font-size: 18px; }
     .lv-daypicker { padding: 10px 16px; }
     .listview-inner { padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
-    .lv-row-head { grid-template-columns: 48px 1fr 28px; gap: 2px 10px; }
+    .lv-row-head { grid-template-columns: 48px 1fr auto 28px; gap: 2px 10px; }
     .lv-detail { padding-left: 58px; }
     .sv-items .sv-entry { padding-left: 58px; }
   }
@@ -466,15 +473,15 @@
       { t: "20:30", n: "Huangpu night cruise", zh: "十六铺码头", city: "上海", k: "show", note: "About 50 min, ¥135 per person.", lat: 31.2285, lon: 121.4990, via: "car" },
       { t: "21:30", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "", lat: 31.2468, lon: 121.4935, via: "car" }
     ]},
-    { id: "d3", label: "Day 3", short: "3", date: "Tue 27 Oct", title: "Museum, Jing'an and last night in Shanghai", color: "#74D3B8", stops: [
+    { id: "d3", label: "Day 3", short: "3", date: "Tue 27 Oct", title: "Museum, art, Plaza 66 and last night in Shanghai", color: "#74D3B8", stops: [
       { t: "07:45", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Leaving a bit earlier to squeeze in two breakfast stops.", lat: 31.2468, lon: 121.4935 },
       { t: "08:00", n: "Dingxing Road egg pancake", zh: "定兴路蛋饼摊", city: "上海", k: "food", note: "Famous street-stall soft egg pancake (蛋饼), ¥7 each. 330 m from People's Square Exit 8. Opens 05:30, grab and go.", lat: 31.2354, lon: 121.4715, via: "car" },
       { t: "08:25", n: "Da Hu Chun · breakfast", zh: "大壶春（四川中路）", city: "上海", k: "food", note: "Michelin Bib Gourmand. Fresh pork shengjian (鲜肉生煎) and mini wontons. 10 min walk from the egg pancake stall.", lat: 31.2372, lon: 121.4868 },
       { t: "09:30", n: "Shanghai Museum", zh: "上海博物馆（人民广场）", city: "上海", k: "sight", note: "Free. Reserve on WeChat (上海博物馆) or show your passport at the visitor centre. About 2 hours.", lat: 31.2285, lon: 121.4755, via: "car" },
-      { t: "12:00", n: "Nanjing Road West", zh: "南京西路", city: "上海", k: "sight", note: "Upscale shopping stretch — different vibe from the neon pedestrian strip on Day 1. Browse or grab a coffee.", lat: 31.2288, lon: 121.4545 },
-      { t: "13:00", n: "Jing'an Temple", zh: "静安寺", city: "上海", k: "sight", note: "¥50. Golden Buddhist temple in the heart of the city. Quick 30–45 min visit.", lat: 31.2238, lon: 121.4458 },
-      { t: "14:00", n: "Julu Road & surrounds", zh: "巨鹿路", city: "上海", k: "sight", note: "Leafy lane with vintage shops, indie cafés and photo-worthy doorways. Walk toward Changshu Road area.", lat: 31.2212, lon: 121.4488 },
-      { t: "15:30", n: "1933 Old Millfun", zh: "1933老场坊", city: "上海", k: "sight", note: "Brutalist former slaughterhouse turned creative space. Free entry, cool architecture. Near the hotel area.", lat: 31.2520, lon: 121.4910, via: "car" },
+      { t: "11:30", n: "Power Station of Art", zh: "上海当代艺术博物馆", city: "上海", k: "sight", note: "Free. China's first state-run contemporary art museum in a stunning converted power station. 10 min taxi south from the museum. Allow 1.5–2 hours.", lat: 31.2108, lon: 121.4955, via: "car" },
+      { t: "13:30", n: "Plaza 66 & Nanjing Road West", zh: "恒隆广场 · 南京西路", city: "上海", k: "sight", note: "Shanghai's premier luxury mall — Hermès, Louis Vuitton, Chanel, Cartier, Dior. Grab lunch at the food court or a nearby café. About 20 min by taxi.", lat: 31.2288, lon: 121.4545, via: "car" },
+      { t: "15:30", n: "Jing'an Temple", zh: "静安寺", city: "上海", k: "sight", note: "¥50. Golden Buddhist temple in the heart of the city. Quick 30–45 min visit. Walk west from Plaza 66.", lat: 31.2238, lon: 121.4458 },
+      { t: "16:30", n: "1933 Old Millfun", zh: "1933老场坊", city: "上海", k: "sight", note: "Brutalist former slaughterhouse turned creative space. Free entry, cool architecture. Near the hotel area.", lat: 31.2520, lon: 121.4910, via: "car" },
       { t: "18:00", n: "Fu 1015 · dinner", zh: "福1015（愚园路）", city: "上海", k: "food", note: "Michelin-starred Shanghainese in a garden villa. Hairy crab in season. Book ahead. On Yuyuan Road in the Jing'an area.", lat: 31.2215, lon: 121.4251, via: "car" },
       { t: "20:30", n: "Hyatt on the Bund", zh: "上海外滩茂悦大酒店", city: "上海", k: "hotel", note: "Last night in Shanghai. Pack for Hangzhou — car leaves at 08:00.", lat: 31.2468, lon: 121.4935, via: "car" }
     ]},
@@ -561,6 +568,42 @@
   const MODE = { walk: "walk", car: "drive", boat: "boat", train: "train" };
   const STORE = "jiangnan-atlas-v8";
 
+  const PHOTOS = {
+    "浦东国际机场": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Shanghai_Pudong_International_Airport_Interior.jpg/400px-Shanghai_Pudong_International_Airport_Interior.jpg",
+    "上海外滩茂悦大酒店": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Shanghai_skyline_from_the_bund.jpg/400px-Shanghai_skyline_from_the_bund.jpg",
+    "上海半岛酒店": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/The_Peninsula_Shanghai.JPG/400px-The_Peninsula_Shanghai.JPG",
+    "外滩": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Panorama_of_The_Bund%2C_Shanghai.jpg/400px-Panorama_of_The_Bund%2C_Shanghai.jpg",
+    "南京东路步行街": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/East_Nanjing_Road_at_night%2C_Shanghai.jpg/400px-East_Nanjing_Road_at_night%2C_Shanghai.jpg",
+    "武康大楼": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Wukang_Mansion%2C_Shanghai%2C_May_2016_01.JPG/400px-Wukang_Mansion%2C_Shanghai%2C_May_2016_01.JPG",
+    "田子坊": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Tianzifang_21669-Shanghai_%2833070816285%29.jpg/400px-Tianzifang_21669-Shanghai_%2833070816285%29.jpg",
+    "新天地": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Fountain_with_Sculptures_in_Xintiandi_Shanghai_20210329.jpg/400px-Fountain_with_Sculptures_in_Xintiandi_Shanghai_20210329.jpg",
+    "豫园 · 城隍庙": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Yu_Gardens_20090724-01.JPG/400px-Yu_Gardens_20090724-01.JPG",
+    "上海中心大厦": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Shanghai_Tower_2015.jpg/400px-Shanghai_Tower_2015.jpg",
+    "逸龙阁 · 上海半岛酒店": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/The_Peninsula_Shanghai.JPG/400px-The_Peninsula_Shanghai.JPG",
+    "十六铺码头": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Pudong_night_skyline_viewed_from_the_Bund_in_Shanghai_%2841199899084%29.jpg/400px-Pudong_night_skyline_viewed_from_the_Bund_in_Shanghai_%2841199899084%29.jpg",
+    "上海博物馆（人民广场）": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/The_shanghai_museum.jpg/400px-The_shanghai_museum.jpg",
+    "上海当代艺术博物馆": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Shanghai_-_Power_Station_of_Art_%2812250847504%29.jpg/400px-Shanghai_-_Power_Station_of_Art_%2812250847504%29.jpg",
+    "恒隆广场 · 南京西路": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/201907_Plaza_66_Shanghai.jpg/400px-201907_Plaza_66_Shanghai.jpg",
+    "静安寺": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Jing%27an_Temple_Shanghai_6.jpg/400px-Jing%27an_Temple_Shanghai_6.jpg",
+    "1933老场坊": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/2024-Apr_Shanghai_1933_Old_Millfun_%28Old_Slaughterhouse%29_1933%E8%80%81%E5%9C%BA%E5%9D%8A_-_img_12.jpg/400px-2024-Apr_Shanghai_1933_Old_Millfun_%28Old_Slaughterhouse%29_1933%E8%80%81%E5%9C%BA%E5%9D%8A_-_img_12.jpg",
+    "杭州大华饭店": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/West_Lake_-_Hangzhou%2C_China.jpg/400px-West_Lake_-_Hangzhou%2C_China.jpg",
+    "河坊街 + 高银街": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Hangzhou_Hefang_Street_4.jpg/400px-Hangzhou_Hefang_Street_4.jpg",
+    "吴山天风 · 城隍阁": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/City_God_Pavilion%2C_Hangzhou.jpg/400px-City_God_Pavilion%2C_Hangzhou.jpg",
+    "中国茶叶博物馆": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/China_National_Tea_Museum_3.jpg/400px-China_National_Tea_Museum_3.jpg",
+    "灵隐寺 · 飞来峰": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Hangzhou_Lingyin-Temple_20161003.jpg/400px-Hangzhou_Lingyin-Temple_20161003.jpg",
+    "梅家坞茶园": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Dragon_Well_Tea_Plantation%2C_Hangzhou_%283020076220%29.jpg/400px-Dragon_Well_Tea_Plantation%2C_Hangzhou_%283020076220%29.jpg",
+    "苏堤": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Su_Causeway_near_West_Lake%2C_looking_towards_north_20120529_1.jpg/400px-Su_Causeway_near_West_Lake%2C_looking_towards_north_20120529_1.jpg",
+    "雷峰塔": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Leifeng_Pagoda_20191102.jpg/400px-Leifeng_Pagoda_20191102.jpg",
+    "楼外楼（孤山）": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Louwailou_20230716_122644.jpg/400px-Louwailou_20230716_122644.jpg",
+    "白堤 · 断桥": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Huanglong_%26_Broken_Bridge_-_Hangzhou_City_%26_West_Lake_near_Broken_Bridge.jpg/400px-Huanglong_%26_Broken_Bridge_-_Hangzhou_City_%26_West_Lake_near_Broken_Bridge.jpg",
+    "西溪国家湿地公园": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Xixi_Wetland_Park%2C_Hangzhou%2C_China.jpg/400px-Xixi_Wetland_Park%2C_Hangzhou%2C_China.jpg",
+    "拱宸桥 · 桥西历史街区": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/20231122_Gongchen_Bridge_01.jpg/400px-20231122_Gongchen_Bridge_01.jpg",
+    "西湖音乐喷泉": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/West_Lake_Fountain_Show_A.jpg/400px-West_Lake_Fountain_Show_A.jpg",
+    "杭州萧山国际机场": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Hangzhou_Xiaoshan_International_Airport_Terminal_1_20161006.jpg/400px-Hangzhou_Xiaoshan_International_Airport_Terminal_1_20161006.jpg",
+    "高银街": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Hangzhou_Hefang_Street_4.jpg/400px-Hangzhou_Hefang_Street_4.jpg",
+  };
+  const photoUrl = s => PHOTOS[s.zh] || "";
+
   const TODOS = [
     [ // Day 1
       ["Download DiDi app and top up Alipay / WeChat Pay before landing", "Have passport and hotel address screenshot ready for immigration", "Get a local SIM or activate eSIM at the airport", "Withdraw some cash — small notes for tips and street food"],
@@ -592,9 +635,9 @@
       ["Husband-and-wife street stall open from 05:30", "Order the original 蛋饼 (soft egg pancake) — ¥7 each", "Quick grab-and-go, 5 min stop", "330 m from People's Square Metro Exit 8"],
       ["Michelin Bib Gourmand — since 1932", "Order 鲜肉生煎 (pork shengjian) and 小馄饨 (mini wontons)", "Mobile payment only — no cash"],
       ["Free entry — reserve on WeChat mini-program 上海博物馆", "Or show passport at the visitor centre", "Allow about 2 hours — bronze gallery and ceramics are highlights"],
-      ["Upscale shopping stretch — PLAZA 66, IAPM Mall", "Different vibe from the neon pedestrian strip on Day 1", "Grab a coffee at any of the specialty cafés along the way"],
-      ["¥50 entry — one of Shanghai's most famous Buddhist temples", "Golden hall and courtyard — about 30–45 min visit", "Right on the Nanjing Road West metro stop (Line 2/7)"],
-      ["Leafy lane with vintage shops and indie cafés", "Great for photos — colourful doorways and old French plane trees", "Walk toward Changshu Road for more boutiques"],
+      ["Free entry — China's first state-run contemporary art museum", "Housed in a converted 1897 power station — the chimney is iconic", "Check current exhibitions at powerstationofart.com", "10 min taxi south from Shanghai Museum — allow 1.5–2 hours"],
+      ["Shanghai's premier luxury mall — Hermès, LV, Chanel, Cartier, Dior", "Grab lunch in the mall or nearby restaurants", "Plaza 66 Pavilion expansion opened Sep 2026 — check the new wing"],
+      ["¥50 entry — one of Shanghai's most famous Buddhist temples", "Golden hall and courtyard — about 30–45 min visit", "Walk west from Plaza 66, about 10 min"],
       ["Free entry — Brutalist 1933 former slaughterhouse turned creative space", "Impressive concrete spiral ramps and bridges", "Near the hotel area — good stop before heading to dinner"],
       ["Book ahead — very popular", "Michelin-starred Shanghainese in a 1930s garden villa", "Hairy crab 大闸蟹 is in season (Oct–Nov) — must try", "Also order smoked fish 熏鱼 and braised pork belly", "On Yuyuan Road in the Jing'an area — straight from Julu Road"],
       ["Pack for Hangzhou — car leaves at 08:00 tomorrow", "Confirm car pickup with driver tonight"]
@@ -758,9 +801,9 @@
       ["No ticket — street stall, about ¥7 per egg pancake, cash or mobile pay"],
       [],
       ["Shanghai Museum — free — reserve on WeChat 上海博物馆 mini-program"],
+      ["Power Station of Art — free entry"],
       [],
       ["Jing'an Temple — ¥50 — buy at the gate"],
-      [],
       ["1933 Old Millfun — free entry"],
       [],
       []
@@ -1463,6 +1506,8 @@
       body.innerHTML = `<ol class="stops">${day.stops.map((s, i) => {
         const leg = legTo.get(i), has = mapped(s); if (has) n++;
         const active = selStop && selStop.d === sel && selStop.i === i;
+        const sImg = photoUrl(s);
+        const sThumb = sImg ? `<img class="stop-thumb" src="${sImg}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.remove()">` : "";
         return `${leg ? `<div class="leg" style="--i:${k++}"><b>${fmtKm(leg.d)}</b> · ${MODE[leg.mode]}</div>` : ""}
           <li class="stop${active ? " active" : ""}" data-i="${i}" style="--c:${day.color};--i:${k++}" tabindex="0">
             <span class="num ${s.k === "hotel" ? "hotel" : ""} ${has ? "" : "none"}">${has ? n : "–"}</span>
@@ -1473,6 +1518,7 @@
               ${s.note ? `<span class="note">${esc(s.note)}</span>` : ""}
               ${has ? `<a class="row-link" href="${amapUrl(s)}" target="_blank" rel="noopener">Find in Amap ↗</a>` : `<span class="note warn">Not on the map yet</span>`}
             </span>
+            ${sThumb}
             <span class="acts">
               <button class="icon-btn" data-act="up" aria-label="Move ${esc(s.n)} earlier" ${i === 0 ? "disabled" : ""}>${ICON.up}</button>
               <button class="icon-btn" data-act="down" aria-label="Move ${esc(s.n)} later" ${i === day.stops.length - 1 ? "disabled" : ""}>${ICON.down}</button>
@@ -1689,9 +1735,11 @@
     const nm = i => esc(shortName(day.stops[i].n));
     const idx = mappedIdx(selStop.d), pos = idx.indexOf(selStop.i);
     const bar = tour ? `<div class="tourbar" style="--dur:${STEP}s">${tour.idx.map((ix, k) => `<i class="${k < tour.cur ? "done" : k === tour.cur ? "now" : ""}"></i>`).join("")}</div>` : "";
+    const heroImg = photoUrl(s);
+    const hero = heroImg ? `<img class="card-hero" src="${heroImg}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.remove()">` : "";
     card.style.setProperty("--c", day.color);
-    card.innerHTML = `
-      <button class="icon-btn x" id="cardClose" aria-label="Close">${ICON.del}</button>
+    card.innerHTML = `<button class="icon-btn x" id="cardClose" aria-label="Close">${ICON.del}</button>${hero}
+      <div class="card-body">
       <div class="daytag">${esc(day.label)} · ${esc(day.date)}</div>
       <h3>${esc(s.n)}</h3>
       ${s.zh ? `<div class="zh">${esc(s.zh)}</div>` : ""}
@@ -1702,7 +1750,8 @@
         <button data-nav="-1" aria-label="Previous stop" ${pos <= 0 ? "disabled" : ""}>‹</button>
         <a href="${amapUrl(s)}" target="_blank" rel="noopener">Find in Amap ↗</a>
         <button data-nav="1" aria-label="Next stop" ${pos < 0 || pos >= idx.length - 1 ? "disabled" : ""}>›</button>
-      </div>${bar}`;
+      </div>${bar}
+      </div>`;
     card.hidden = false;
     syncCard();
     if (anim) { card.classList.remove("pop"); void card.offsetWidth; card.classList.add("pop"); }
@@ -1891,10 +1940,13 @@
         if (todos) tabs.push({ id: "todo", label: "To-do", items: todos, cls: "checklist" });
         if (prereqs) tabs.push({ id: "prereq", label: "Pre-requisite", items: prereqs, cls: "bullet" });
         if (tickets) tabs.push({ id: "ticket", label: "Tickets", items: tickets, cls: "ticket" });
+        const lvImg = photoUrl(s);
+        const lvThumb = lvImg ? `<img class="lv-thumb" src="${lvImg}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.remove()">` : "";
         html += `<div class="lv-row${hasDetail ? "" : " no-todo"}">
           <div class="lv-row-head" ${hasDetail ? 'data-expand' : ''}>
             <span class="lv-time">${esc(s.t || "—")}</span>
             <span class="lv-name">${esc(s.n)}${s.zh ? `<span class="lv-zh">${esc(s.zh)}</span>` : ""}</span>
+            ${lvThumb}
             ${hasDetail ? `<span class="lv-chevron">${chevronSvg}</span>` : '<span></span>'}
           </div>
           ${hasDetail ? `<div class="lv-detail">
