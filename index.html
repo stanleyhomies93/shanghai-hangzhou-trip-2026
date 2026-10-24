@@ -380,6 +380,21 @@
     .lv-detail { padding-left: 58px; }
     .sv-items .sv-entry { padding-left: 58px; }
   }
+  .lightbox { position:fixed; inset:0; z-index:20; background:rgba(0,0,0,.92); backdrop-filter:blur(12px);
+    display:flex; align-items:center; justify-content:center; flex-direction:column; cursor:zoom-out; }
+  .lightbox[hidden] { display:none!important; }
+  .lightbox img { max-width:92vw; max-height:80vh; object-fit:contain; border-radius:8px;
+    cursor:default; animation:lbIn .35s var(--ease) both; }
+  @keyframes lbIn { from { opacity:0; scale:.92 } }
+  .lightbox .lb-caption { color:#fff; text-align:center; margin-top:16px; font-size:15px; font-weight:600;
+    animation:lbIn .35s var(--ease) .1s both; }
+  .lightbox .lb-caption small { display:block; font-family:var(--zh); font-weight:400; font-size:13px;
+    color:rgba(255,255,255,.6); margin-top:2px; }
+  .lightbox .lb-close { position:absolute; top:16px; right:16px; width:36px; height:36px; border-radius:50%;
+    border:0; background:rgba(255,255,255,.15); color:#fff; display:grid; place-items:center; cursor:pointer;
+    transition:background .2s; }
+  .lightbox .lb-close:hover { background:rgba(255,255,255,.25); }
+  .card-hero, .stop-thumb, .lv-thumb { cursor:zoom-in; }
 </style>
 
 <div class="app boot" id="app">
@@ -422,6 +437,7 @@
   <div class="listview" id="listview"></div>
   <div class="listview" id="prereqview"></div>
   <div class="listview" id="ticketview"></div>
+  <div class="lightbox" id="lightbox" hidden></div>
 
   <div class="hint">Drag to pan · right-drag or two fingers to rotate · scroll to zoom</div>
 
@@ -1507,7 +1523,7 @@
         const leg = legTo.get(i), has = mapped(s); if (has) n++;
         const active = selStop && selStop.d === sel && selStop.i === i;
         const sImg = photoUrl(s);
-        const sThumb = sImg ? `<img class="stop-thumb" src="${sImg}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.remove()">` : "";
+        const sThumb = sImg ? `<img class="stop-thumb" src="${sImg}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.remove()" onclick="event.stopPropagation();openLightbox(this.src,'${esc(s.n).replace(/'/g, "\\&#39;")}','${esc(s.zh || "").replace(/'/g, "\\&#39;")}')">` : "";
         return `${leg ? `<div class="leg" style="--i:${k++}"><b>${fmtKm(leg.d)}</b> · ${MODE[leg.mode]}</div>` : ""}
           <li class="stop${active ? " active" : ""}" data-i="${i}" style="--c:${day.color};--i:${k++}" tabindex="0">
             <span class="num ${s.k === "hotel" ? "hotel" : ""} ${has ? "" : "none"}">${has ? n : "–"}</span>
@@ -1736,7 +1752,7 @@
     const idx = mappedIdx(selStop.d), pos = idx.indexOf(selStop.i);
     const bar = tour ? `<div class="tourbar" style="--dur:${STEP}s">${tour.idx.map((ix, k) => `<i class="${k < tour.cur ? "done" : k === tour.cur ? "now" : ""}"></i>`).join("")}</div>` : "";
     const heroImg = photoUrl(s);
-    const hero = heroImg ? `<img class="card-hero" src="${heroImg}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.remove()">` : "";
+    const hero = heroImg ? `<img class="card-hero" src="${heroImg}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.remove()" onclick="event.stopPropagation();openLightbox(this.src,'${esc(s.n).replace(/'/g, "\\&#39;")}','${esc(s.zh || "").replace(/'/g, "\\&#39;")}')">` : "";
     card.style.setProperty("--c", day.color);
     card.innerHTML = `<button class="icon-btn x" id="cardClose" aria-label="Close">${ICON.del}</button>${hero}
       <div class="card-body">
@@ -1847,9 +1863,21 @@
     if (e.target.closest && e.target.closest("input, textarea, select")) return;
     if (e.key === "+" || e.key === "=") zoomBy(1 / 1.4);
     else if (e.key === "-") zoomBy(1.4);
-    else if (e.key === "Escape") { if (addMode) cancelAdd(); else if (tour) stopTour(); else if (selStop) { selStop = null; hideCard(); renderPanel(); } }
+    else if (e.key === "Escape") { if (!lightbox.hidden) closeLightbox(); else if (addMode) cancelAdd(); else if (tour) stopTour(); else if (selStop) { selStop = null; hideCard(); renderPanel(); } }
   });
   window.addEventListener("resize", () => { setSheet(sheet.state); resize(); moveIndicator(true); });
+
+  /* ============================================================ lightbox */
+  const lightbox = document.getElementById("lightbox");
+  function openLightbox(src, name, zh) {
+    lightbox.innerHTML = `<button class="lb-close" aria-label="Close">${ICON.del}</button>
+      <img src="${src}">
+      <div class="lb-caption">${esc(name)}${zh ? `<small>${esc(zh)}</small>` : ""}</div>`;
+    lightbox.hidden = false;
+    lightbox.querySelector(".lb-close").addEventListener("click", closeLightbox);
+    lightbox.addEventListener("click", e => { if (e.target === lightbox) closeLightbox(); });
+  }
+  function closeLightbox() { lightbox.hidden = true; lightbox.innerHTML = ""; }
 
   /* ============================================================ boot */
   resize();
@@ -1941,7 +1969,7 @@
         if (prereqs) tabs.push({ id: "prereq", label: "Pre-requisite", items: prereqs, cls: "bullet" });
         if (tickets) tabs.push({ id: "ticket", label: "Tickets", items: tickets, cls: "ticket" });
         const lvImg = photoUrl(s);
-        const lvThumb = lvImg ? `<img class="lv-thumb" src="${lvImg}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.remove()">` : "";
+        const lvThumb = lvImg ? `<img class="lv-thumb" src="${lvImg}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.remove()" onclick="event.stopPropagation();openLightbox(this.src,'${esc(s.n).replace(/'/g, "\\&#39;")}','${esc(s.zh || "").replace(/'/g, "\\&#39;")}')">` : "";
         html += `<div class="lv-row${hasDetail ? "" : " no-todo"}">
           <div class="lv-row-head" ${hasDetail ? 'data-expand' : ''}>
             <span class="lv-time">${esc(s.t || "—")}</span>
